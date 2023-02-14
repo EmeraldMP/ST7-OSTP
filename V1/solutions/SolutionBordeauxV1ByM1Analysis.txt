@@ -1,0 +1,11 @@
+Number of performed tasks: 10
+Total working duration (in min): 600
+Total traveling duration (in min): 322
+Total traveling distance (in km): 262.789
+Total idle time (in min): 180
+
+Optimization method id: IP
+Optimization run time (in s): 0.069
+
+Valentin: {Start: Ta=07:38AM(458), Ts=07:38AM(458), Te=07:38AM(458)} >> 22 >> {T9: Ta=08:00AM(480), Ts=08:00AM(480), Te=09:00AM(540)} >> 15 >> {T7: Ta=09:15AM(555), Ts=09:15AM(555), Te=10:15AM(615)} >> 26 >> {T4: Ta=10:41AM(641), Ts=12:00PM(720), Te=01:00PM(780)} >> 10 >> {T6: Ta=01:10PM(790), Ts=01:10PM(790), Te=02:10PM(850)} >> 8 >> {T3: Ta=02:18PM(858), Ts=02:24PM(864), Te=03:24PM(924)} >> 15 >> {T5: Ta=03:39PM(939), Ts=03:39PM(939), Te=04:39PM(999)} >> 21 >> {Return: Ta=05:00PM(1020), Ts=05:00PM(1020), Te=05:00PM(1020)}
+Ambre: {Start: Ta=08:00AM(480), Ts=08:00AM(480), Te=08:00AM(480)} >> 16 >> {T10: Ta=08:16AM(496), Ts=08:16AM(496), Te=09:16AM(556)} >> 8 >> {T8: Ta=09:24AM(564), Ts=10:21AM(621), Te=11:21AM(681)} >> 39 >> {U1: Ta=12:00PM(720), Ts=12:00PM(720), Te=01:00PM(780)} >> 43 >> {T1: Ta=01:43PM(823), Ts=01:43PM(823), Te=02:43PM(883)} >> 62 >> {T2: Ta=03:45PM(945), Ts=04:23PM(983), Te=05:23PM(1043)} >> 37 >> {Return: Ta=06:00PM(1080), Ts=06:00PM(1080), Te=06:00PM(1080)}

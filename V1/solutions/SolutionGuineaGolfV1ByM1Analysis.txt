@@ -1,0 +1,10 @@
+Number of performed tasks: 9
+Total working duration (in min): 370
+Total traveling duration (in min): 183
+Total traveling distance (in km): 147.936
+Total idle time (in min): 47
+
+Optimization method id: IP
+Optimization run time (in s): 0.121
+
+Tom: {Start: Ta=08:00AM(480), Ts=08:00AM(480), Te=08:00AM(480)} >> 19 >> {T1: Ta=08:19AM(499), Ts=08:19AM(499), Te=08:59AM(539)} >> 1 >> {T2: Ta=09:00AM(540), Ts=09:00AM(540), Te=09:40AM(580)} >> 1 >> {T5: Ta=09:41AM(581), Ts=09:41AM(581), Te=10:21AM(621)} >> 22 >> {T6: Ta=10:43AM(643), Ts=10:43AM(643), Te=11:23AM(683)} >> 5 >> {T7: Ta=11:28AM(688), Ts=11:28AM(688), Te=12:08PM(728)} >> 64 >> {T9: Ta=01:12PM(792), Ts=01:12PM(792), Te=02:02PM(842)} >> 52 >> {T4: Ta=02:54PM(894), Ts=02:54PM(894), Te=03:34PM(934)} >> 4 >> {T3: Ta=03:38PM(938), Ts=03:38PM(938), Te=04:18PM(978)} >> 9 >> {T8: Ta=04:27PM(987), Ts=05:14PM(1034), Te=05:54PM(1074)} >> 6 >> {Return: Ta=06:00PM(1080), Ts=06:00PM(1080), Te=06:00PM(1080)}
