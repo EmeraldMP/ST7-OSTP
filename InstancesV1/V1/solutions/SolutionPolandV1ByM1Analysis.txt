@@ -1,0 +1,11 @@
+Number of performed tasks: 18
+Total working duration (in min): 745
+Total traveling duration (in min): 191
+Total traveling distance (in km): 152.391
+Total idle time (in min): 180
+
+Optimization method id: IP
+Optimization run time (in s): 116.876
+
+Irena: {Start: Ta=08:30AM(510), Ts=08:30AM(510), Te=08:30AM(510)} >> 4 >> {T17: Ta=08:34AM(514), Ts=08:34AM(514), Te=09:04AM(544)} >> 3 >> {T4: Ta=09:07AM(547), Ts=09:07AM(547), Te=09:37AM(577)} >> 12 >> {T2: Ta=09:49AM(589), Ts=09:49AM(589), Te=10:29AM(629)} >> 1 >> {T1: Ta=10:30AM(630), Ts=10:30AM(630), Te=11:10AM(670)} >> 1 >> {T6: Ta=11:11AM(671), Ts=11:11AM(671), Te=11:51AM(711)} >> 13 >> {T12: Ta=12:04PM(724), Ts=12:04PM(724), Te=01:19PM(799)} >> 4 >> {T10: Ta=01:23PM(803), Ts=03:10PM(910), Te=04:00PM(960)} >> 5 >> {T11: Ta=04:05PM(965), Ts=04:05PM(965), Te=04:45PM(1005)} >> 3 >> {T15: Ta=04:48PM(1008), Ts=05:20PM(1040), Te=06:00PM(1080)} >> 6 >> {Return: Ta=06:06PM(1086), Ts=06:06PM(1086), Te=06:06PM(1086)}
+Karol: {Start: Ta=08:00AM(480), Ts=08:00AM(480), Te=08:00AM(480)} >> 13 >> {T7: Ta=08:13AM(493), Ts=08:13AM(493), Te=08:53AM(533)} >> 5 >> {T5: Ta=08:58AM(538), Ts=08:58AM(538), Te=09:38AM(578)} >> 3 >> {T3: Ta=09:41AM(581), Ts=09:41AM(581), Te=10:21AM(621)} >> 6 >> {T14: Ta=10:27AM(627), Ts=10:34AM(634), Te=11:14AM(674)} >> 46 >> {U1: Ta=12:00PM(720), Ts=12:00PM(720), Te=01:00PM(780)} >> 39 >> {T18: Ta=01:39PM(819), Ts=01:39PM(819), Te=02:29PM(869)} >> 5 >> {T9: Ta=02:34PM(874), Ts=02:34PM(874), Te=03:04PM(904)} >> 9 >> {T13: Ta=03:13PM(913), Ts=03:13PM(913), Te=03:53PM(953)} >> 5 >> {T8: Ta=03:58PM(958), Ts=03:58PM(958), Te=04:48PM(1008)} >> 6 >> {T16: Ta=04:54PM(1014), Ts=05:28PM(1048), Te=05:58PM(1078)} >> 2 >> {Return: Ta=06:00PM(1080), Ts=06:00PM(1080), Te=06:00PM(1080)}

@@ -1,0 +1,12 @@
+Number of performed tasks: 21
+Total working duration (in min): 835
+Total traveling duration (in min): 702
+Total traveling distance (in km): 574.535
+Total idle time (in min): 182
+
+Optimization method id: IP
+Optimization run time (in s): 2100.013
+
+Mattia: {Start: Ta=09:00AM(540), Ts=09:00AM(540), Te=09:00AM(540)} >> 20 >> {T9: Ta=09:20AM(560), Ts=09:20AM(560), Te=10:00AM(600)} >> 27 >> {T2: Ta=10:27AM(627), Ts=10:58AM(658), Te=11:38AM(698)} >> 13 >> {T3: Ta=11:51AM(711), Ts=11:51AM(711), Te=12:21PM(741)} >> 9 >> {U1: Ta=12:30PM(750), Ts=12:30PM(750), Te=01:30PM(810)} >> 20 >> {T10: Ta=01:50PM(830), Ts=01:50PM(830), Te=02:30PM(870)} >> 31 >> {T12: Ta=03:01PM(901), Ts=03:01PM(901), Te=03:31PM(931)} >> 49 >> {T11: Ta=04:20PM(980), Ts=05:30PM(1050), Te=06:00PM(1080)} >> 39 >> {Return: Ta=06:39PM(1119), Ts=06:39PM(1119), Te=06:39PM(1119)}
+Paolo: {Start: Ta=08:00AM(480), Ts=08:00AM(480), Te=08:00AM(480)} >> 54 >> {T21: Ta=08:54AM(534), Ts=08:54AM(534), Te=09:34AM(574)} >> 27 >> {T8: Ta=10:01AM(601), Ts=10:33AM(633), Te=11:03AM(663)} >> 27 >> {T1: Ta=11:30AM(690), Ts=11:30AM(690), Te=12:00PM(720)} >> 40 >> {T20: Ta=12:40PM(760), Ts=12:40PM(760), Te=01:20PM(800)} >> 36 >> {T5: Ta=01:56PM(836), Ts=01:56PM(836), Te=02:26PM(866)} >> 29 >> {T15: Ta=02:55PM(895), Ts=03:22PM(922), Te=04:52PM(1012)} >> 18 >> {T4: Ta=05:10PM(1030), Ts=05:10PM(1030), Te=05:50PM(1070)} >> 10 >> {Return: Ta=06:00PM(1080), Ts=06:00PM(1080), Te=06:00PM(1080)}
+Carolina: {Start: Ta=08:00AM(480), Ts=08:00AM(480), Te=08:00AM(480)} >> 35 >> {T19: Ta=08:35AM(515), Ts=08:35AM(515), Te=09:15AM(555)} >> 12 >> {T16: Ta=09:27AM(567), Ts=09:49AM(589), Te=10:34AM(634)} >> 6 >> {T18: Ta=10:40AM(640), Ts=10:40AM(640), Te=11:25AM(685)} >> 2 >> {T17: Ta=11:27AM(687), Ts=11:27AM(687), Te=12:12PM(732)} >> 41 >> {T6: Ta=12:53PM(773), Ts=12:53PM(773), Te=01:33PM(813)} >> 23 >> {T7: Ta=01:56PM(836), Ts=01:56PM(836), Te=02:26PM(866)} >> 38 >> {T13: Ta=03:04PM(904), Ts=03:04PM(904), Te=03:44PM(944)} >> 21 >> {T14: Ta=04:05PM(965), Ts=04:05PM(965), Te=04:45PM(1005)} >> 75 >> {Return: Ta=06:00PM(1080), Ts=06:00PM(1080), Te=06:00PM(1080)}
