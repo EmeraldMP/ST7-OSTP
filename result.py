@@ -16,6 +16,8 @@ class Result:
         self.méthode = méthode
 
     def process_result(self):
+        # Translate the informations held in the variables so that we can visualise the results
+
         self.txt = "taskId;performed,employeeName,startTime;"
         # all_rutes = {worker:['HouseOf'+str(worker)] for worker in Workers}
         self.all_rutes = {worker: [] for worker in self.Data.Workers}
@@ -62,10 +64,12 @@ class Result:
             self.routes_lat_log[w].append(self.Data.nodes['HouseOf'+w])
 
     def save_map(self, ajout=""):
+        # Represent the solution in a map, to easily see the spacial repartition of the workers tasks
+
         m = folium.Map(
             location=self.Data.nodes['HouseOf' + self.Data.Workers[0]], zoom_start=10)
 
-        colors = ['blue', 'red', 'beige', 'green', 'black', 'orange', 'pink', 'cadetblue', 'darkblue', 'darkgreen', 'darkpurple',
+        colors = ['blue', 'red', 'green', 'orange', 'pink', 'cadetblue', 'black', 'darkblue', 'darkgreen', 'darkpurple',
                   'darkred', 'gray', 'lightblue', 'lightgray', 'lightgreen', 'lightred', 'purple', 'white']
 
         for j in range(len(self.Data.Workers)):
@@ -87,6 +91,7 @@ class Result:
             f"solutions/map{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.html")
 
     def save_txt(self, ajout=""):
+        # Generate the result
         with open(f"solutions\Solution{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.txt", "w") as file:
             file.write(self.txt)
 
@@ -100,6 +105,8 @@ class Result:
                     print(self.Var.X[(i, j, w)][1])
 
     def resultat_graph(self, ajout="", show=False):
+        # Represent the solution in a time graph, to easily see the period of work, travel and the respect of availabilities
+
         col = list(mcolors.TABLEAU_COLORS)
 
         n = 0
@@ -140,12 +147,14 @@ class Result:
             plt.show()
 
     def save_res(self, ajout=""):
+        # Save the value of the variable for the solution find
         with open(f"solutions\X{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
             pickle.dump(self.Var.X, tf)
         with open(f"solutions\T{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
             pickle.dump(self.Var.T, tf)
 
     def load_res(self, ajout=""):
+        # Load the value of the variable for the solution find before
         with open(f"solutions\X{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "rb") as tf:
             self.Var.X = pickle.load(tf)
         with open(f"solutions\T{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "rb") as tf:

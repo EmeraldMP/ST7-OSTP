@@ -178,6 +178,7 @@ def créer_ensemble(endroit, instance):
     # Define the time matrix in minutes round ceil between a node (task or worker) with another (task or worker)
     t = distance_matrix(nodes)
 
+    # Define a dictionnary to access the tasks availables for a given worker according to their skills
     Cap = {}
     for w in Workers:
         for i in Tasks:
