@@ -24,7 +24,7 @@ class Result:
         for tasks in self.Var.T.keys():
             self.result = [tasks]
             try:
-                if self.Var.T[tasks][0] == 0:
+                if self.Var.Y[tasks][0] == 0:
                     self.result.append(0)
                     self.result += ['', '']
                 else:
@@ -39,7 +39,7 @@ class Result:
                 for el in self.result:
                     self.txt += str(el)+";"
             except:
-                if self.Var.T[tasks] == 0:
+                if self.Var.Y[tasks] == 0:
                     self.result.append(0)
                     self.result += ['', '']
                 else:
@@ -58,16 +58,16 @@ class Result:
 
         self.routes_lat_log = {worker: [] for worker in self.Data.Workers}
         for w in self.Data.Workers:
-            self.routes_lat_log[w].append(self.Data.nodes['HouseOf'+w])
+            self.routes_lat_log[w].append(self.Data.nodes[self.Data.Houses[w]])
             self.routes_lat_log[w] += [self.Data.nodes[task[0]]
                                        for task in self.all_rutes[w]]
-            self.routes_lat_log[w].append(self.Data.nodes['HouseOf'+w])
+            self.routes_lat_log[w].append(self.Data.nodes[self.Data.Houses[w]])
 
     def save_map(self, ajout=""):
         # Represent the solution in a map, to easily see the spacial repartition of the workers tasks
 
         m = folium.Map(
-            location=self.Data.nodes['HouseOf' + self.Data.Workers[0]], zoom_start=10)
+            location=self.Data.nodes[self.Data.Houses[self.Data.Workers[0]]], zoom_start=10)
 
         colors = ['blue', 'red', 'green', 'orange', 'pink', 'cadetblue', 'black', 'darkblue', 'darkgreen', 'darkpurple',
                   'darkred', 'gray', 'lightblue', 'lightgray', 'lightgreen', 'lightred', 'purple', 'white']
@@ -152,6 +152,8 @@ class Result:
             pickle.dump(self.Var.X, tf)
         with open(f"solutions\T{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
             pickle.dump(self.Var.T, tf)
+        with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
+            pickle.dump(self.Var.Y, tf)
 
     def load_res(self, ajout=""):
         # Load the value of the variable for the solution find before
@@ -159,3 +161,14 @@ class Result:
             self.Var.X = pickle.load(tf)
         with open(f"solutions\T{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "rb") as tf:
             self.Var.T = pickle.load(tf)
+        try:
+            with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "rb") as tf:
+                self.Var.Y = pickle.load(tf)
+        except:
+            self.Var.Y = {i: [sum([self.Var.X[(i, j, w)][0] for w in self.Data.Workers for j in self.Data.Tasks +
+                                   self.Data.Pauses[w] + [self.Data.Houses[w]] if (i, j, w) in self.Var.X])] for i in self.Var.T.keys() if type(self.Var.T[i]) != int} |\
+                {i: sum([self.Var.X[(i, j, w)][0] for w in self.Data.Workers for j in self.Data.Tasks +
+                         self.Data.Pauses[w] + [self.Data.Houses[w]] if (i, j, w) in self.Var.X]) for i in self.Var.T.keys() if type(self.Var.T[i]) == int}
+            print(self.Var.Y)
+            with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
+                pickle.dump(self.Var.Y, tf)
