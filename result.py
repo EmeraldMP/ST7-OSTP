@@ -154,6 +154,8 @@ class Result:
             pickle.dump(self.Var.T, tf)
         with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
             pickle.dump(self.Var.Y, tf)
+        with open(f"solutions\Indic{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
+            pickle.dump(self.Var.Indicateur, tf)
 
     def load_res(self, ajout=""):
         # Load the value of the variable for the solution find before
@@ -172,3 +174,10 @@ class Result:
             print(self.Var.Y)
             with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
                 pickle.dump(self.Var.Y, tf)
+
+        try:
+            with open(f"solutions\Indic{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "rb") as tf:
+                self.Var.Indicateur = pickle.load(tf)
+
+        except:
+            pass

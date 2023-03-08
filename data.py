@@ -88,7 +88,7 @@ def lecture(endroit, instance):
     df_Task = pd.read_excel(path, sheet_name=2, index_col='TaskId')
 
     # Task unvabilites
-    df_Task_un = pd.read_excel(path, sheet_name=3, index_col='TaskId')
+    df_Task_un = pd.read_excel(path, sheet_name=3)
 
     return df_Workers, df_Workers_un, df_Task, df_Task_un
 
@@ -147,7 +147,8 @@ def créer_ensemble(endroit, instance):
     m = {}
 
     for i in Tasks:
-        w_unva_df = df_Workers_un[df_Workers_un['TaskID'] == i]
+        print(df_Task_un[df_Task_un['TaskId'] == i])
+        w_unva_df = df_Task_un[df_Task_un['TaskId'] == i]
         if w_unva_df.shape[0] == 0:
             Unva[w] = []
         else:
