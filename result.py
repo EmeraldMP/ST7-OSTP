@@ -30,7 +30,7 @@ class Result:
         self.méthode = méthode
         self.version = version
 
-    def resultat_timeline(self, show=True):
+    def resultat_timeline(self, ajout="", show=True):
 
         data = []
 
@@ -46,7 +46,6 @@ class Result:
             data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(i[3] + self.Data.d[i[0]]),
                          'Finish': minutes_to_time_pd(i[3] + self.Data.d[i[0]] + self.Data.t[i[0]][self.Data.Houses[w]]),
                          'Worker': w})
-        print(data)
 
         len_color = len(data)//10 + 1
 
@@ -57,6 +56,8 @@ class Result:
         fig.update_layout(title='Daily Task Timeline',
                           xaxis=dict(tickformat='%H:%M:%S'),
                           height=400)
+        fig.write_html(f"solutions/Timeline{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.html")
+
         if show:
             fig.show()
 
@@ -217,6 +218,7 @@ class Result:
         try:
             with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "rb") as tf:
                 self.Var.Y = pickle.load(tf)
+            cygdjwhjgsk
         except:
             self.Var.Y = {i: [sum([self.Var.X[(i, j, w)][0] for w in self.Data.Workers for j in self.Data.Tasks +
                                    self.Data.Pauses[w] + [self.Data.Houses[w]] if (i, j, w) in self.Var.X])] for i in self.Var.T.keys() if type(self.Var.T[i]) != int} |\
