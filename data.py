@@ -147,20 +147,19 @@ def créer_ensemble(endroit, instance):
     m = {}
 
     for i in Tasks:
-        print(df_Task_un[df_Task_un['TaskId'] == i])
-        w_unva_df = df_Task_un[df_Task_un['TaskId'] == i]
-        if w_unva_df.shape[0] == 0:
-            Unva[w] = []
+        i_unva_df = df_Task_un[df_Task_un['TaskId'] == i]
+        if i_unva_df.shape[0] == 0:
+            Unva[i] = []
         else:
             unva_list = []
-            for n in range(w_unva_df.shape[0]):
+            for n in range(i_unva_df.shape[0]):
                 unva_name = f'Unvalaibility{i}{n+1}'
                 unva_list.append(unva_name)
 
                 m[unva_name] = [time_to_minutes(
-                    w_unva_df.iloc[n, 1]), time_to_minutes(w_unva_df.iloc[n, 2])]
+                    i_unva_df.iloc[n, 1]), time_to_minutes(i_unva_df.iloc[n, 2])]
 
-            Unva[w] = unva_list
+            Unva[i] = unva_list
 
     # Opening time for taks i
     a = df_Task.apply(lambda x: int(time_to_minutes(

@@ -5,6 +5,7 @@ import time
 class Variable():
     def __init__(self, Data, méthode, version):
         self.Indicateur = {}
+        self.Data = Data
         self.m, self.Xm, self.Tm, self.Ym, self.DurTask, self.DurTrav, self.D = Modele[(méthode, version)](
             Data)
         self.integerate()
@@ -34,8 +35,9 @@ class Variable():
 
         try:
 
-            self.Y = {i: [sum([self.Ym[(i, w)].getValue() for w in self.Data.Workers if (
-                i, w) in self.Ym])] for i in self.Tm.keys() if type(self.Tm[i]) != int} | {i: 1 for i in self.Tm.keys() if type(self.Tm[i]) == int}
+            self.Y = {i: [sum([self.Ym[(i, w)].getValue() for w in self.Data.Workers if (i, w) in self.Ym])] for i in self.Tm.keys(
+            ) if type(self.Tm[i]) != int} | {i: 1 for i in self.Tm.keys() if type(self.Tm[i]) == int}
+            print("c'est génial")
 
         except:
 
@@ -179,11 +181,9 @@ def modele_v1_2(Data):
     # Variables additionnelles
 
     Y = {(i, w): LinExpr(quicksum([X[(i, j, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-        {(i, w)
-          : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+        {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
     Y_bis = {(i, w): LinExpr(quicksum([X[(j, i, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-            {(i, w)
-              : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+            {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
 
     ####################################
     ## Initialisation des contraintes ##
@@ -281,10 +281,9 @@ def modele_v2_1(Data):
     # Variables additionnelles
 
     Y = {(i, w): LinExpr(quicksum([X[(i, j, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-        {(i, w)
-          : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+        {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
     Y_bis = {(i, w): LinExpr(quicksum([X[(j, i, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-            {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+            {(i, w)             : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
 
     ####################################
     ## Initialisation des contraintes ##
@@ -331,15 +330,15 @@ def modele_v2_1(Data):
     ContrMid2 = {(i, j, w): m.addConstr(
         D[(i, j, w)]*13*60 <= T[j]) for (i, j, w) in X.keys() if j in T}
     ContrMid3 = {(i, j, w): m.addConstr(
-        MT*(1 - D[(i, j, w)]) + 13*60 >= T[i]) for (i, j, w) in X.keys() if i in T}
+        MT*(1 - D[(i, j, w)]) + 13*60 >= T[i] + Data.d[i]) for (i, j, w) in X.keys() if i in T}
     ContrMid4 = {w: m.addConstr(quicksum([D[(i, j, w)] for i in Data.TasksW[w] + Data.Pauses[w] + [
         Data.Houses[w]] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if (i, j, w) in X.keys()]) == 1) for w in Data.Workers}
 
     # Indisponibilité des tâches
 
     ContrM1_1 = {u: m.addConstr(-MT*(1 - M1[u]) <= T[i] - (
-        Data.m[u][0] + Data.d[i])) for i in Data.Tasks for u in Data.Unva[i]}
-    ContrM1_2 = {u: m.addConstr(T[i] - (Data.m[u][0] + Data.d[i]) <= -1 + MT*M1[u])
+        Data.m[u][0] - Data.d[i])) for i in Data.Tasks for u in Data.Unva[i]}
+    ContrM1_2 = {u: m.addConstr(T[i] - (Data.m[u][0] - Data.d[i]) <= -1 + MT*M1[u])
                  for i in Data.Tasks for u in Data.Unva[i]}
 
     ContrM2_1 = {u: m.addConstr(-MT*(1 - M2[u]) <= T[i] - Data.m[u][1])

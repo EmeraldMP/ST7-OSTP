@@ -4,16 +4,61 @@ import folium
 from gurobipy import *
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import plotly.express as px
+import pandas as pd
+
+
+def minutes_to_time_pd(minutes_since_midnight):
+    minutes_since_midnight = int(minutes_since_midnight)
+
+    # create timedelta object from minutes since midnight
+    timedelta_obj = pd.Timedelta(minutes=minutes_since_midnight)
+
+    # create Timestamp object for today's date at the given time
+    timestamp_obj = pd.Timestamp.today().normalize() + timedelta_obj
+
+    return timestamp_obj
 
 
 class Result:
 
-    def __init__(self, Data, Var, endroit, instance, méthode):
+    def __init__(self, Data, Var, endroit, instance, méthode, version):
         self.Data = Data
         self.Var = Var
         self.endroit = endroit
         self.instance = instance
         self.méthode = méthode
+        self.version = version
+
+    def resultat_timeline(self, show=True):
+
+        data = []
+
+        n = 0
+        for w in self.Data.Workers:
+            prec = self.Data.Houses[w]
+            for i in self.all_rutes[w]:
+                data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(i[3] - self.Data.t[prec][i[0]]),
+                             'Finish': minutes_to_time_pd(i[3]), 'Worker': w})
+                data.append({'Task': i[0], 'Start': minutes_to_time_pd(i[3]),
+                             'Finish': minutes_to_time_pd(i[3] + self.Data.d[i[0]]), 'Worker': w})
+                prec = i[0]
+            data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(i[3] + self.Data.d[i[0]]),
+                         'Finish': minutes_to_time_pd(i[3] + self.Data.d[i[0]] + self.Data.t[i[0]][self.Data.Houses[w]]),
+                         'Worker': w})
+        print(data)
+
+        len_color = len(data)//10 + 1
+
+        fig = px.timeline(data, x_start="Start", x_end="Finish", y="Worker", color="Task",
+                          color_discrete_sequence=['#DBDBDB'] + px.colors.qualitative.Plotly*len_color)
+
+        # Update the figure layout and show the plot
+        fig.update_layout(title='Daily Task Timeline',
+                          xaxis=dict(tickformat='%H:%M:%S'),
+                          height=400)
+        if show:
+            fig.show()
 
     def process_result(self):
         # Translate the informations held in the variables so that we can visualise the results
@@ -50,6 +95,12 @@ class Result:
                                 self.result.append(w)
                                 self.all_rutes[w].append(self.result)
                     self.result.append(self.Var.T[tasks])
+
+        self.txt += "\n\n"
+        self.txt += "employeeName,lunchBreakStartTime;"
+        for (w, t) in self.Var.Indicateur["moments repas"]:
+            self.txt += "\n"
+            self.txt += str(w) + ";" + str(t) + ";"
 
         self.all_rutes
         # sort the routes in order of time for each worker
@@ -88,11 +139,11 @@ class Result:
 
         # show the map
         m.save(
-            f"solutions/map{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.html")
+            f"solutions/map{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.html")
 
     def save_txt(self, ajout=""):
         # Generate the result
-        with open(f"solutions\Solution{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.txt", "w") as file:
+        with open(f"solutions\Solution{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.txt", "w") as file:
             file.write(self.txt)
 
     def resultat_simple(self):
@@ -142,29 +193,29 @@ class Result:
             ax.legend()
 
         plt.savefig(
-            f"solutions\Graph{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.png")
+            f"solutions\Graph{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.png")
         if show:
             plt.show()
 
     def save_res(self, ajout=""):
         # Save the value of the variable for the solution find
-        with open(f"solutions\X{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
+        with open(f"solutions\X{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "wb") as tf:
             pickle.dump(self.Var.X, tf)
-        with open(f"solutions\T{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
+        with open(f"solutions\T{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "wb") as tf:
             pickle.dump(self.Var.T, tf)
-        with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
+        with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "wb") as tf:
             pickle.dump(self.Var.Y, tf)
-        with open(f"solutions\Indic{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
+        with open(f"solutions\Indic{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "wb") as tf:
             pickle.dump(self.Var.Indicateur, tf)
 
     def load_res(self, ajout=""):
         # Load the value of the variable for the solution find before
-        with open(f"solutions\X{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "rb") as tf:
+        with open(f"solutions\X{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "rb") as tf:
             self.Var.X = pickle.load(tf)
-        with open(f"solutions\T{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "rb") as tf:
+        with open(f"solutions\T{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "rb") as tf:
             self.Var.T = pickle.load(tf)
         try:
-            with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "rb") as tf:
+            with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "rb") as tf:
                 self.Var.Y = pickle.load(tf)
         except:
             self.Var.Y = {i: [sum([self.Var.X[(i, j, w)][0] for w in self.Data.Workers for j in self.Data.Tasks +
@@ -172,11 +223,11 @@ class Result:
                 {i: sum([self.Var.X[(i, j, w)][0] for w in self.Data.Workers for j in self.Data.Tasks +
                          self.Data.Pauses[w] + [self.Data.Houses[w]] if (i, j, w) in self.Var.X]) for i in self.Var.T.keys() if type(self.Var.T[i]) == int}
             print(self.Var.Y)
-            with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "wb") as tf:
+            with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "wb") as tf:
                 pickle.dump(self.Var.Y, tf)
 
         try:
-            with open(f"solutions\Indic{self.endroit}V{self.instance}ByM{self.méthode}{ajout}.pkl", "rb") as tf:
+            with open(f"solutions\Indic{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "rb") as tf:
                 self.Var.Indicateur = pickle.load(tf)
 
         except:
