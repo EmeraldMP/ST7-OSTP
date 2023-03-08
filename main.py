@@ -6,11 +6,12 @@ from gurobipy import *
 
 
 endroit = "Bordeaux"
-instance = 1
-méthode = 1
+instance = 2
+méthode = 2
+version = 1
 
 Data = data.Data(endroit, instance)
-Var = modele.Variable(Data, modele.modele_v1_2)
+Var = modele.Variable(Data, méthode, version)
 
 print(Var.opti())
 

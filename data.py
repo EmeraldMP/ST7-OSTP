@@ -7,7 +7,8 @@ import pandas as pd
 class Data:
     def __init__(self, endroit, instance):
         self.Workers, self.Skills, self.Tasks, self.TasksW, self.Houses, \
-            self.Pauses, self.l, self.r, self.s, self.t, self.d, self.a, self.b, self.alpha, self.beta, self.nodes = créer_ensemble(
+            self.Pauses, self.Unva, self.l, self.r, self.s, self.t, self.d, self.a, \
+            self.b, self.alpha, self.beta, self.nodes, self.m = créer_ensemble(
                 endroit, instance)
 
 # function to transform time given in the excel in minute of the day
@@ -87,7 +88,7 @@ def lecture(endroit, instance):
     df_Task = pd.read_excel(path, sheet_name=2, index_col='TaskId')
 
     # Task unvabilites
-    df_Task_un = pd.read_excel(path, sheet_name=3, index_col='TaskId')
+    df_Task_un = pd.read_excel(path, sheet_name=3)
 
     return df_Workers, df_Workers_un, df_Task, df_Task_un
 
@@ -141,6 +142,26 @@ def créer_ensemble(endroit, instance):
                 d_pause[pause_name] = b_pause[pause_name] - a_pause[pause_name]
             Pauses[w] = pause_list
 
+    # create de dictionary with the information of tasks unavailability
+    Unva = {}
+    m = {}
+
+    for i in Tasks:
+        print(df_Task_un[df_Task_un['TaskId'] == i])
+        w_unva_df = df_Task_un[df_Task_un['TaskId'] == i]
+        if w_unva_df.shape[0] == 0:
+            Unva[w] = []
+        else:
+            unva_list = []
+            for n in range(w_unva_df.shape[0]):
+                unva_name = f'Unvalaibility{i}{n+1}'
+                unva_list.append(unva_name)
+
+                m[unva_name] = [time_to_minutes(
+                    w_unva_df.iloc[n, 1]), time_to_minutes(w_unva_df.iloc[n, 2])]
+
+            Unva[w] = unva_list
+
     # Opening time for taks i
     a = df_Task.apply(lambda x: int(time_to_minutes(
         x['OpeningTime'])), axis=1).to_dict() | a_pause
@@ -190,4 +211,4 @@ def créer_ensemble(endroit, instance):
                 Cap |= {(i, w): True}
     TasksW = {w: [i for i in Tasks if Cap[(i, w)]] for w in Workers}
 
-    return Workers, Skills, Tasks, TasksW, Houses, Pauses, l, r, s, t, d, a, b, alpha, beta, nodes
+    return Workers, Skills, Tasks, TasksW, Houses, Pauses, Unva, l, r, s, t, d, a, b, alpha, beta, nodes, m
