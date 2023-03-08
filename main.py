@@ -8,15 +8,15 @@ from gurobipy import *
 endroit = "Bordeaux"
 instance = 2
 méthode = 2
-version = 1
+version = 2
 
 Data = data.Data(endroit, instance)
 Var = modele.Variable(Data, méthode, version)
 
-# print(Var.opti())
+print(Var.opti())
 
 Result = result.Result(Data, Var, endroit, instance, méthode, version)
-Result.load_res()
+Result.save_res()
 Result.process_result()
 Result.save_txt()
 Result.resultat_simple()
