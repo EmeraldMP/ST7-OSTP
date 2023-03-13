@@ -5,21 +5,30 @@ import time
 from gurobipy import *
 
 
-endroit = "Bordeaux"
+endroit = "Poland"
 instance = 2
 méthode = 2
 version = 2
+opt = True
+ajout = ""
+
 
 Data = data.Data(endroit, instance)
 Var = modele.Variable(Data, méthode, version)
 
-# print(Var.opti())
+if opt:
+    Var.opti()
+    Result = result.Result(Data, Var, endroit, instance, méthode, version)
+    Result.save_res(ajout=ajout)
+else:
+    Result = result.Result(Data, Var, endroit, instance, méthode, version)
+    Result.load_res(ajout=ajout)
 
-Result = result.Result(Data, Var, endroit, instance, méthode, version)
-Result.save_res()
 Result.process_result()
-Result.save_txt()
+Result.save_txt(ajout=ajout)
+Result.save_map(ajout=ajout)
 Result.resultat_simple()
-Result.resultat_timeline()
+Result.resultat_timeline(ajout=ajout, show=False)
+
 
 print(Var.Indicateur)

@@ -14,6 +14,10 @@ class Variable():
         t1 = time.time()
         self.m.optimize()
         delta = time.time() - t1
+        self.etape_2(self.m.ObjVal)
+        """t1 = time.time()
+        self.m.optimize()
+        delta += time.time() - t1"""
         self.integerate()
         self.Indicateur["temps execution"] = delta
         self.Indicateur["tdurée tâches"] = self.DurTask.getValue()
@@ -37,7 +41,6 @@ class Variable():
 
             self.Y = {i: [sum([self.Ym[(i, w)].getValue() for w in self.Data.Workers if (i, w) in self.Ym and i in self.Data.TasksW[w]])] for i in self.Tm.keys(
             ) if type(self.Tm[i]) != int} | {i: 1 for i in self.Tm.keys() if type(self.Tm[i]) == int}
-            print("c'est génial")
 
         except:
 
@@ -52,19 +55,41 @@ class Variable():
         for d in self.D.keys():
             if self.D[d].x:
                 try:
-                    rep.append([w, max(d[-1], self.Tm[d[0]].x)])
+                    if d[0] not in self.Data.Houses.values():
+                        try:
+                            rep.append(
+                                [d[-1], int(max(720, self.T[d[0]][0] + self.Data.d[d[0]]))])
+                        except:
+                            rep.append(
+                                [d[-1], int(max(720, self.T[d[0]] + self.Data.d[d[0]]))])
+                    else:
+                        rep.append(
+                            [d[-1], int(max(720, self.Data.alpha[d[-1]]))])
+
                 except:
                     if d not in self.Data.Houses.values():
                         for w in self.Data.Workers:
-                            if d in self.Data.TasksW[w]:
+                            if d in self.Data.TasksW[w] + self.Data.Pauses[w]:
                                 if self.Ym[(d, w)].getValue():
-                                    rep.append([w, max(720, self.Tm[d].x)])
+                                    try:
+                                        rep.append(
+                                            [w, int(max(720, self.T[d][0] + self.Data.d[d]))])
+                                    except:
+                                        rep.append(
+                                            [w, int(max(720, self.T[d] + self.Data.d[d]))])
+
                     else:
                         for w in self.Data.Workers:
                             if self.Data.Houses[w] == d:
-                                rep.append([w, max(720, self.Tm[d].x)])
+                                rep.append(
+                                    [w, int(max(720, self.Data.alpha[w]))])
 
         return rep
+
+    def etape_2(self, objectif):
+        self.m.addConstr(self.DurTask == 680)
+        self.m.setObjective(self.DurTrav, GRB.MINIMIZE)
+        self.m.update()
 
 
 def modele_v1_1(Data):
@@ -107,36 +132,36 @@ def modele_v1_1(Data):
     ## Initialisation des contraintes ##
     ####################################
 
-    # 1- All tasks have to be done once ✅
+    # 1- All tasks have to be done once
     ContrDone = {i: m.addConstr(
         quicksum([Y[(i, w)] for w in Data.Workers]) == 1) for i in Data.Tasks}
 
-    # 2 -Workers have to be capable of doing the Tasks ✅
+    # 2 -Workers have to be capable of doing the Tasks
     MS = 10
     ContrSkill = {(i, w, s): m.addConstr(
         Data.r[i][s] <= Data.l[w][s] + MS*(1 - Y[(i, w)])) for i in Data.Tasks for w in Data.Workers for s in Data.Skills}
 
-    # 3- flow restriction ✅
+    # 3- flow restriction
     ContrFlow = {(i, w): m.addConstr(Y[(i, w)] == Y_bis[(i, w)])
                  for w in Data.Workers for i in Data.Tasks + Data.Pauses[w]}
 
-    # 4- Border flow conditions ✅
+    # 4- Border flow conditions
     ContrBorderL = {w: m.addConstr(quicksum(
         [X[(i, Data.Houses[w], w)] for i in Data.Tasks + Data.Pauses[w] + [Data.Houses[w]]]) == 1) for w in Data.Workers}
     ContrBorderR = {w: m.addConstr(quicksum(
         [X[(Data.Houses[w], j, w)] for j in Data.Tasks + Data.Pauses[w] + [Data.Houses[w]]]) == 1) for w in Data.Workers}
 
-    # 5- Task disponibility ✅
+    # 5- Task disponibility
     ContrTaskDisp = {i: m.addConstr(Data.a[i] <= T[i]) for i in Data.Tasks}
     ContrTaskDisp = {i: m.addConstr(
         T[i] + Data.d[i] <= Data.b[i]) for i in Data.Tasks}
 
-    # 6- task sequence is possible ✅
+    # 6- task sequence is possible
     MT = 24*60
     ContrSeq = {(i, j, w): m.addConstr(T[i] + Data.d[i] + Data.t[i][j] <= T[j] + MT*(1 - X[(i, j, w)]))
                 for w in Data.Workers for i in Data.Tasks + Data.Pauses[w] for j in Data.Tasks + Data.Pauses[w] if i != j}
 
-    # 7- Task sequence borders conditions ✅
+    # 7- Task sequence borders conditions
     ContrBorderSeqDeb = {(Data.Houses[w], j, w): m.addConstr(Data.alpha[w] + Data.t[Data.Houses[w]][j] <=
                                                              T[j] + MT*(1 - X[(Data.Houses[w], j, w)])) for w in Data.Workers for j in Data.Tasks + Data.Pauses[w]}
     ContrBorderSeqFin = {(i, Data.Houses[w], w): m.addConstr(T[i] + Data.d[i] + Data.t[i][Data.Houses[w]] <=
@@ -192,41 +217,43 @@ def modele_v1_2(Data):
     # Variables additionnelles
 
     Y = {(i, w): LinExpr(quicksum([X[(i, j, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-        {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+        {(i, w)
+          : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
     Y_bis = {(i, w): LinExpr(quicksum([X[(j, i, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-            {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+            {(i, w)
+              : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
 
     ####################################
     ## Initialisation des contraintes ##
     ####################################
 
-    # 1- All tasks have to be done once ✅
+    # 1- All tasks have to be done once
     ContrDone = {i: m.addConstr(
         quicksum([Y[(i, w)] for w in Data.Workers]) == 1) for i in Data.Tasks}
 
-    # 2 - have to be capable of doing the Tasks ✅
+    # 2 - have to be capable of doing the Tasks
 
-    # 3- flow restriction ✅
+    # 3- flow restriction
     ContrFlow = {(i, w): m.addConstr(Y[(i, w)] == Y_bis[(i, w)])
                  for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]}
 
-    # 4- Border flow conditions ✅
+    # 4- Border flow conditions
     ContrBorderL = {w: m.addConstr(quicksum(
         [X[(i, Data.Houses[w], w)] for i in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]]]) == 1) for w in Data.Workers}
     ContrBorderR = {w: m.addConstr(quicksum(
         [X[(Data.Houses[w], j, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]]]) == 1) for w in Data.Workers}
 
-    # 5- Task disponibility ✅
+    # 5- Task disponibility
     ContrTaskDisp = {i: m.addConstr(Data.a[i] <= T[i]) for i in Data.Tasks}
     ContrTaskDisp = {i: m.addConstr(
         T[i] + Data.d[i] <= Data.b[i]) for i in Data.Tasks}
 
-    # 6- task sequence is possible ✅
+    # 6- task sequence is possible
     MT = 24*60
     ContrSeq = {(i, j, w): m.addConstr(T[i] + Data.d[i] + Data.t[i][j] <= T[j] + MT*(1 - X[(i, j, w)]))
                 for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w] for j in Data.TasksW[w] + Data.Pauses[w] if i != j}
 
-    # 7- Task sequence borders conditions ✅
+    # 7- Task sequence borders conditions
     ContrBorderSeqDeb = {(Data.Houses[w], j, w): m.addConstr(
         Data.alpha[w] + Data.t[Data.Houses[w]][j] <= T[j] + MT*(1 - X[(Data.Houses[w], j, w)])) for w in Data.Workers for j in Data.TasksW[w]}
     ContrBorderSeqFin = {(i, Data.Houses[w], w): m.addConstr(T[i] + Data.d[i] + Data.t[i][Data.Houses[w]]
@@ -292,9 +319,10 @@ def modele_v2_1(Data):
     # Variables additionnelles
 
     Y = {(i, w): LinExpr(quicksum([X[(i, j, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-        {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+        {(i, w)
+          : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
     Y_bis = {(i, w): LinExpr(quicksum([X[(j, i, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-            {(i, w)             : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+            {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
 
     ####################################
     ## Initialisation des contraintes ##
@@ -363,11 +391,12 @@ def modele_v2_1(Data):
     ####################################
     ##  Initialisation de l'objectif  ##
     ####################################
-    DurTask = LinExpr(quicksum([Data.d[i]*Y[(i, w)] for (i, w) in Y.keys()]))
+    DurTask = LinExpr(quicksum([Data.d[i]*Y[(i, w)]
+                      for (i, w) in Y.keys() if i not in Data.Pauses[w]]))
     DurTrav = LinExpr(quicksum([Data.t[i][j]*X[(i, j, w)]
                       for (i, j, w) in X.keys()]))
 
-    m.setObjective(DurTask - 0.0001 * DurTrav, GRB.MAXIMIZE)
+    m.setObjective(DurTask - 0.0001*DurTrav, GRB.MAXIMIZE)
     m.update()
 
     return m, X, T, Y, DurTask, DurTrav, D
@@ -424,8 +453,7 @@ def modele_v2_2(Data):
         {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]} | {
         (i, w): int(w2 == w) for w in Data.Workers for (w2, i) in Data.Houses.items()}
     Y_bis = {(i, w): LinExpr(quicksum([X[(j, i, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-            {(i, w)
-              : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+            {(i, w)             : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
 
     ####################################
     ## Initialisation des contraintes ##
@@ -467,12 +495,9 @@ def modele_v2_2(Data):
 
     # Contraintes sur les pauses de midi
 
-    """ContrMid1 = {(i, j, w): m.addConstr(T[i] + Data.d[i] + Data.t[i][j] + 60*D[i] <= T[J] + MT * (1 - X[(i, j, w)]))
-                 for (i, j, w) in X.keys()}"""
-
     ContrMid2 = {i: m.addConstr(D[i] <= quicksum(
         Y[(i, w)] for w in Data.Workers if (i, w) in Y.keys())) for i in set_nodes_D}
-    ContrMid3 = {i: m.addConstr(T[i] + Data.d[i] <= 13*60-1 + MT*(1 - D[i]))
+    ContrMid3 = {i: m.addConstr(T[i] + Data.d[i] <= 13*60 + MT*(1 - D[i]))
                  for i in set_nodes_D if i not in Data.Houses.values()}
     ContrMid4 = {(i, j, w): m.addConstr(D[i]*13*60 <= T[j] + MT*(1-X[(i, j, w)]))
                  for (i, j, w) in X.keys() if j not in Data.Houses.values()}
@@ -484,7 +509,7 @@ def modele_v2_2(Data):
 
     ContrM1_1 = {u: m.addConstr(-MT*(1 - M1[u]) <= T[i] - (
         Data.m[u][0] + Data.d[i])) for i in Data.Tasks for u in Data.Unva[i]}
-    ContrM1_2 = {u: m.addConstr(T[i] - (Data.m[u][0] + Data.d[i]) <= -1 + MT*M1[u])
+    ContrM1_2 = {u: m.addConstr(T[i] - (Data.m[u][0] - Data.d[i]) <= -1 + MT*M1[u])
                  for i in Data.Tasks for u in Data.Unva[i]}
 
     ContrM2_1 = {u: m.addConstr(-MT*(1 - M2[u]) <= T[i] - Data.m[u][1])
@@ -499,11 +524,11 @@ def modele_v2_2(Data):
     ##  Initialisation de l'objectif  ##
     ####################################
     DurTask = LinExpr(quicksum(
-        [Data.d[i]*Y[(i, w)] for (i, w) in Y.keys() if i not in Data.Houses.values()]))
+        [Data.d[i]*Y[(i, w)] for (i, w) in Y.keys() if i not in Data.Houses.values() and i not in Data.Pauses[w]]))
     DurTrav = LinExpr(quicksum([Data.t[i][j]*X[(i, j, w)]
                       for (i, j, w) in X.keys()]))
 
-    m.setObjective(DurTask - 0.0001 * DurTrav, GRB.MAXIMIZE)
+    m.setObjective(DurTask - 0.0001*DurTrav, GRB.MAXIMIZE)
     m.update()
 
     return m, X, T, Y, DurTask, DurTrav, D

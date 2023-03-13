@@ -36,27 +36,44 @@ class Result:
 
         n = 0
         for w in self.Data.Workers:
+            for (w_, t_) in self.Var.Indicateur["moments repas"]:
+                if w_ == w:
+                    data.append({'Task': 'Lunch', 'Start': minutes_to_time_pd(t_),
+                                 'Finish': minutes_to_time_pd(t_ + 60), 'Worker': w, 'shape': 2})
+                    break
             prec = self.Data.Houses[w]
             for i in self.all_rutes[w]:
-                data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(i[3] - self.Data.t[prec][i[0]]),
-                             'Finish': minutes_to_time_pd(i[3]), 'Worker': w})
+
+                if i[3] - self.Data.t[prec][i[0]] < t_ + 60 and i[3] > t_ + 60:
+                    data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(i[3] - self.Data.t[prec][i[0]] - 60),
+                                 'Finish': minutes_to_time_pd(t_), 'Worker': w, 'shape': 1})
+                    data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(t_ + 60),
+                                 'Finish': minutes_to_time_pd(i[3]), 'Worker': w, 'shape': 1})
+                elif t_ <= i[3] - self.Data.t[prec][i[0]] < t_ + 60:
+                    data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(i[3] - self.Data.t[prec][i[0]] - 60),
+                                 'Finish': minutes_to_time_pd(t_), 'Worker': w, 'shape': 1})
+                else:
+                    data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(i[3] - self.Data.t[prec][i[0]]),
+                                 'Finish': minutes_to_time_pd(i[3]), 'Worker': w, 'shape': 1})
+
                 data.append({'Task': i[0], 'Start': minutes_to_time_pd(i[3]),
-                             'Finish': minutes_to_time_pd(i[3] + self.Data.d[i[0]]), 'Worker': w})
+                             'Finish': minutes_to_time_pd(i[3] + self.Data.d[i[0]]), 'Worker': w, 'shape': 1})
                 prec = i[0]
             data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(i[3] + self.Data.d[i[0]]),
                          'Finish': minutes_to_time_pd(i[3] + self.Data.d[i[0]] + self.Data.t[i[0]][self.Data.Houses[w]]),
-                         'Worker': w})
+                         'Worker': w, 'shape': 0})
 
         len_color = len(data)//10 + 1
 
-        fig = px.timeline(data, x_start="Start", x_end="Finish", y="Worker", color="Task",
-                          color_discrete_sequence=['#DBDBDB'] + px.colors.qualitative.Plotly*len_color)
+        fig = px.timeline(data, x_start="Start", x_end="Finish", y="Worker", color="Task", pattern_shape="Task", pattern_shape_sequence=['\\'] + ['' for i in range(len(data))],
+                          color_discrete_sequence=['#3B8BDA'] + ['#DBDBDB'] + px.colors.qualitative.Plotly*len_color)
 
         # Update the figure layout and show the plot
         fig.update_layout(title='Daily Task Timeline',
                           xaxis=dict(tickformat='%H:%M:%S'),
                           height=400)
-        fig.write_html(f"solutions/Timeline{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.html")
+        fig.write_html(
+            f"solutions/Timeline{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.html")
 
         if show:
             fig.show()
@@ -97,11 +114,12 @@ class Result:
                                 self.all_rutes[w].append(self.result)
                     self.result.append(self.Var.T[tasks])
 
-        self.txt += "\n\n"
-        self.txt += "employeeName,lunchBreakStartTime;"
-        for (w, t) in self.Var.Indicateur["moments repas"]:
-            self.txt += "\n"
-            self.txt += str(w) + ";" + str(t) + ";"
+        if self.Var.Indicateur["moments repas"]:
+            self.txt += "\n\n"
+            self.txt += "employeeName,lunchBreakStartTime;"
+            for (w, t) in self.Var.Indicateur["moments repas"]:
+                self.txt += "\n"
+                self.txt += str(w) + ";" + str(t) + ";"
 
         self.all_rutes
         # sort the routes in order of time for each worker
@@ -218,7 +236,6 @@ class Result:
         try:
             with open(f"solutions\Y{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.pkl", "rb") as tf:
                 self.Var.Y = pickle.load(tf)
-            cygdjwhjgsk
         except:
             self.Var.Y = {i: [sum([self.Var.X[(i, j, w)][0] for w in self.Data.Workers for j in self.Data.Tasks +
                                    self.Data.Pauses[w] + [self.Data.Houses[w]] if (i, j, w) in self.Var.X])] for i in self.Var.T.keys() if type(self.Var.T[i]) != int} |\
