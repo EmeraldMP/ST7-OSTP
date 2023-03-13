@@ -14,8 +14,8 @@ class Variable():
         t1 = time.time()
         self.m.optimize()
         delta = time.time() - t1
-        self.etape_2(self.m.ObjVal)
-        """t1 = time.time()
+        """self.etape_2(self.m.ObjVal)
+        t1 = time.time()
         self.m.optimize()
         delta += time.time() - t1"""
         self.integerate()
