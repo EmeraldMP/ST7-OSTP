@@ -14,10 +14,10 @@ class Variable():
         t1 = time.time()
         self.m.optimize()
         delta = time.time() - t1
-        """self.etape_2(self.m.ObjVal)
+        self.etape_2(self.m.ObjVal)
         t1 = time.time()
         self.m.optimize()
-        delta += time.time() - t1"""
+        delta += time.time() - t1
         self.integerate()
         self.Indicateur["temps execution"] = delta
         self.Indicateur["tdurée tâches"] = self.DurTask.getValue()
@@ -87,7 +87,7 @@ class Variable():
         return rep
 
     def etape_2(self, objectif):
-        self.m.addConstr(self.DurTask == 680)
+        self.m.addConstr(self.DurTask >= 720)
         self.m.setObjective(self.DurTrav, GRB.MINIMIZE)
         self.m.update()
 
@@ -217,11 +217,9 @@ def modele_v1_2(Data):
     # Variables additionnelles
 
     Y = {(i, w): LinExpr(quicksum([X[(i, j, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-        {(i, w)
-          : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+        {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
     Y_bis = {(i, w): LinExpr(quicksum([X[(j, i, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-            {(i, w)
-              : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+            {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
 
     ####################################
     ## Initialisation des contraintes ##
@@ -319,10 +317,9 @@ def modele_v2_1(Data):
     # Variables additionnelles
 
     Y = {(i, w): LinExpr(quicksum([X[(i, j, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-        {(i, w)
-          : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+        {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
     Y_bis = {(i, w): LinExpr(quicksum([X[(j, i, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-            {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+            {(i, w)             : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
 
     ####################################
     ## Initialisation des contraintes ##
@@ -453,7 +450,8 @@ def modele_v2_2(Data):
         {(i, w): 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]} | {
         (i, w): int(w2 == w) for w in Data.Workers for (w2, i) in Data.Houses.items()}
     Y_bis = {(i, w): LinExpr(quicksum([X[(j, i, w)] for j in Data.TasksW[w] + Data.Pauses[w] + [Data.Houses[w]] if j != i])) for w in Data.Workers for i in Data.TasksW[w] + Data.Pauses[w]} |\
-            {(i, w)             : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
+            {(i, w)
+              : 0 for w in Data.Workers for i in Data.Tasks if i not in Data.TasksW[w]}
 
     ####################################
     ## Initialisation des contraintes ##
@@ -528,7 +526,9 @@ def modele_v2_2(Data):
     DurTrav = LinExpr(quicksum([Data.t[i][j]*X[(i, j, w)]
                       for (i, j, w) in X.keys()]))
 
-    m.setObjective(DurTask - 0.0001*DurTrav, GRB.MAXIMIZE)
+    m.addConstr(DurTask >= 690)
+    m.params.MIPFocus = 3
+    m.setObjective(DurTask, GRB.MAXIMIZE)
     m.update()
 
     return m, X, T, Y, DurTask, DurTrav, D
