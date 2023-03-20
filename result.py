@@ -59,6 +59,7 @@ class Result:
                 data.append({'Task': i[0], 'Start': minutes_to_time_pd(i[3]),
                              'Finish': minutes_to_time_pd(i[3] + self.Data.d[i[0]]), 'Worker': w, 'shape': 1})
                 prec = i[0]
+
             data.append({'Task': 'Trajectory', 'Start': minutes_to_time_pd(i[3] + self.Data.d[i[0]]),
                          'Finish': minutes_to_time_pd(i[3] + self.Data.d[i[0]] + self.Data.t[i[0]][self.Data.Houses[w]]),
                          'Worker': w, 'shape': 0})

@@ -5,12 +5,12 @@ import time
 from gurobipy import *
 
 
-endroit = "Poland"
+endroit = "Bordeaux"
 instance = 2
 méthode = 2
 version = 2
-opt = True
-ajout = "_test"
+opt = False
+ajout = ""
 
 
 Data = data.Data(endroit, instance)
