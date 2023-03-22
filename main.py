@@ -6,7 +6,7 @@ from metaheuristic import feasibility
 from gurobipy import *
 
 
-endroit = "Bordeaux"
+endroit = "Poland"
 instance = 2
 méthode = 2
 version = 2
@@ -32,7 +32,8 @@ Result.resultat_simple()
 Result.resultat_timeline(ajout=ajout, show=False)
 
 gene = Result.convert_to_gene()
-print(gene)
+gene = {'Irena': ['T5', 'T14', 'T8', 'T15', 'T1', 'T2', 'T7'], 'Karol': [
+    'T3', 'T9', 'T12', 'T11', 'T4', 'T17', 'T18', 'T19', 'T6', 'T13']}
 print(feasibility(gene, Data))
 
 print(Var.Indicateur)
