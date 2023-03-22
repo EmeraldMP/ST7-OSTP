@@ -1,0 +1,15 @@
+taskId;performed,employeeName,startTime;
+T1;0;;;
+T2;1;Ambre;914;
+T3;1;Valentin;576;
+T4;1;Ambre;811;
+T5;1;Valentin;501;
+T6;1;Valentin;644;
+T7;1;Ambre;665;
+T8;1;Ambre;492;
+T9;1;Valentin;786;
+T10;1;Ambre;560;
+
+employeeName,lunchBreakStartTime;
+Valentin;720;
+Ambre;725;

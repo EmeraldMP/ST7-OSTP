@@ -536,8 +536,9 @@ def modele_v2_2(Data):
 
 def modele_v3_1(Data):
 
-    return None
+    return None, {}, {}, {}, 0, 0, {}
 
 
 Modele = {(1, 1): modele_v1_1, (1, 2): modele_v1_2,
-          (2, 1): modele_v2_1, (2, 2): modele_v2_2}
+          (2, 1): modele_v2_1, (2, 2): modele_v2_2,
+          (3, 1): modele_v3_1}

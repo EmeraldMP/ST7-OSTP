@@ -8,7 +8,7 @@ class Data:
     def __init__(self, endroit, instance):
         self.Workers, self.Skills, self.Tasks, self.TasksW, self.Houses, \
             self.Pauses, self.Unva, self.l, self.r, self.s, self.t, self.d, self.a, \
-            self.b, self.alpha, self.beta, self.nodes, self.m = créer_ensemble(
+            self.b, self.alpha, self.beta, self.nodes, self.m, self.C = créer_ensemble(
                 endroit, instance)
 
 # function to transform time given in the excel in minute of the day
@@ -142,25 +142,6 @@ def créer_ensemble(endroit, instance):
                 d_pause[pause_name] = b_pause[pause_name] - a_pause[pause_name]
             Pauses[w] = pause_list
 
-    # create de dictionary with the information of tasks unavailability
-    Unva = {}
-    m = {}
-
-    for i in Tasks:
-        i_unva_df = df_Task_un[df_Task_un['TaskId'] == i]
-        if i_unva_df.shape[0] == 0:
-            Unva[i] = []
-        else:
-            unva_list = []
-            for n in range(i_unva_df.shape[0]):
-                unva_name = f'Unvalaibility{i}{n+1}'
-                unva_list.append(unva_name)
-
-                m[unva_name] = [time_to_minutes(
-                    i_unva_df.iloc[n, 1]), time_to_minutes(i_unva_df.iloc[n, 2])]
-
-            Unva[i] = unva_list
-
     # Opening time for taks i
     a = df_Task.apply(lambda x: int(time_to_minutes(
         x['OpeningTime'])), axis=1).to_dict() | a_pause
@@ -198,6 +179,28 @@ def créer_ensemble(endroit, instance):
     # Define the time matrix in minutes round ceil between a node (task or worker) with another (task or worker)
     t = distance_matrix(nodes)
 
+    # create de dictionary with the information of tasks unavailability
+    Unva = {}
+    m = {}
+    C = {}
+
+    for i in Tasks:
+        i_unva_df = df_Task_un[df_Task_un['TaskId'] == i]
+        if i_unva_df.shape[0] == 0:
+            Unva[i] = []
+        else:
+            unva_list = []
+            for n in range(i_unva_df.shape[0]):
+                unva_name = f'Unvalaibility{i}{n+1}'
+                unva_list.append(unva_name)
+
+                m[unva_name] = [time_to_minutes(
+                    i_unva_df.iloc[n, 1]), time_to_minutes(i_unva_df.iloc[n, 2])]
+                C[unva_name] = [time_to_minutes(
+                    i_unva_df.iloc[n, 1]) - d[i], time_to_minutes(i_unva_df.iloc[n, 2])]
+
+            Unva[i] = unva_list
+
     # Define a dictionnary to access the tasks availables for a given worker according to their skills
     Cap = {}
     for w in Workers:
@@ -210,4 +213,4 @@ def créer_ensemble(endroit, instance):
                 Cap |= {(i, w): True}
     TasksW = {w: [i for i in Tasks if Cap[(i, w)]] for w in Workers}
 
-    return Workers, Skills, Tasks, TasksW, Houses, Pauses, Unva, l, r, s, t, d, a, b, alpha, beta, nodes, m
+    return Workers, Skills, Tasks, TasksW, Houses, Pauses, Unva, l, r, s, t, d, a, b, alpha, beta, nodes, m, C

@@ -2,6 +2,7 @@ import data
 import result
 import modele
 import time
+from metaheuristic import feasibility
 from gurobipy import *
 
 
@@ -29,5 +30,9 @@ Result.save_txt(ajout=ajout)
 Result.save_map(ajout=ajout)
 Result.resultat_simple()
 Result.resultat_timeline(ajout=ajout, show=False)
+
+gene = Result.convert_to_gene()
+print(gene)
+print(feasibility(gene, Data))
 
 print(Var.Indicateur)

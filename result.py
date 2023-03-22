@@ -1,4 +1,5 @@
 from data import minutes_to_time
+from metaheuristic import initial_time
 import pickle
 import folium
 from gurobipy import *
@@ -252,3 +253,116 @@ class Result:
 
         except:
             pass
+
+    def convert_to_gene(self):
+        gene = {w: [i[0] for i in self.all_rutes[w] if i[0]
+                    not in self.Data.Pauses[w]] for w in self.Data.Workers}
+        return gene
+
+    def convert_from_gene(self, gene):
+
+        X = {(i, j, w): [0, f"{w}_fait_le_trajet_{i}_à_{j}"] for w in self.Data.Workers for j in self.Data.TasksW[w] + self.Data.Pauses[w] for i in self.Data.TasksW[w] + self.Data.Pauses[w] if j != i} |\
+            {(i, self.Data.Houses[w], w): [0, f"{w}_fait_le_trajet_{i}_à_{self.Data.Houses[w]}"] for w in self.Data.Workers for i in self.Data.TasksW[w] + self.Data.Pauses[w]} |\
+            {(self.Data.Houses[w], j, w): [0, f"{w}_fait_le_trajet_{self.Data.Houses[w]}_à_{j}"] for w in self.Data.Workers for j in self.Data.TasksW[w] + self.Data.Pauses[w]} |\
+            {(self.Data.Houses[w], self.Data.Houses[w], w): [
+                0, f"{w}_fait_le_trajet_{self.Data.Houses[w]}_à_{self.Data.Houses[w]}"] for w in self.Data.Workers}
+
+        rep = []
+
+        # - T_i = time of begining of task i
+        T = {i: [0, f"temps_début_tâche_{i}"] for i in self.Data.Tasks} | {
+            p: self.Data.a[p] for w in self.Data.Workers for p in self.Data.Pauses[w]}
+
+        for w in self.Data.Workers:
+            Tasks = gene[w]
+            Lunch = True
+            Indisp = {p: True for p in self.Data.Pauses[w]}
+            fin = self.Data.alpha[w]
+            lastTask = self.Data.Houses[w]
+            for task in Tasks:
+
+                fin += self.Data.t[lastTask][task]
+                begin = initial_time(fin, task, w, self.Data)
+
+                if begin + self.Data.d[task] > 13*60 and Lunch:
+                    Lunch = False
+                    fin += 60
+                    rep.append(
+                        [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
+                    begin = initial_time(fin, task, w, self.Data)
+
+                fin = begin + self.Data.d[task]
+
+                for p in Indisp.keys():
+
+                    if Indisp[p] and fin + self.Data.t[task][p] > self.Data.a[p]:
+
+                        X[(lastTask, p, w)][0] = 1
+                        Indisp[p] = False
+                        fin = self.Data.b[p]
+                        lastTask = p
+
+                        fin += self.Data.t[lastTask][task]
+                        begin = initial_time(fin, task, w, self.Data)
+
+                        if not begin + self.Data.d[task] <= 13*60 and Lunch:
+                            Lunch = False
+                            fin += 60
+                            rep.append(
+                                [w, int(max(720, T[lastTask] + self.Data.d[lastTask]))])
+                            begin = initial_time(fin, task, w, self.Data)
+
+                        fin = begin + self.Data.d[task]
+
+                # print(task, minutes_to_time(begin), minutes_to_time(fin))
+                X[(lastTask, task, w)][0] = 1
+                T[task][0] = begin
+
+                lastTask = task
+
+            task = self.Data.Houses[w]
+
+            fin += self.Data.t[lastTask][task]
+            begin = max(fin, self.Data.beta[w])
+
+            if not begin <= 13*60 and Lunch:
+                Lunch = False
+                fin += 60
+                rep.append(
+                    [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
+                begin = max(fin, self.Data.beta[w])
+
+            fin = begin
+
+            for p in Indisp.keys():
+                # print(task, minutes_to_time(fin + self.Data.t[task][p]), minutes_to_time((self.Data.a[p])), Indisp[p])
+                if Indisp[p]:
+
+                    X[(lastTask, p, w)][0] = 1
+                    Indisp[p] = False
+                    fin = self.Data.b[p]
+                    lastTask = p
+
+                    fin += self.Data.t[lastTask][task]
+                    begin = max(fin, self.Data.beta[w])
+
+                    if not begin <= 13*60 and Lunch:
+                        Lunch = False
+                        fin += 60
+                        rep.append(
+                            [w, int(max(720, T[lastTask] + self.Data.d[lastTask]))])
+                        begin = max(fin, self.Data.beta[w])
+
+                    fin = begin
+
+            X[(lastTask, task, w)][0] = 1
+
+        self.Var.X = X
+        self.Var.T = T
+
+        self.Var.Y = {i: [sum([self.Var.X[(i, j, w)][0] for w in self.Data.Workers for j in self.Data.Tasks +
+                               self.Data.Pauses[w] + [self.Data.Houses[w]] if (i, j, w) in self.Var.X])] for i in self.Var.T.keys() if type(self.Var.T[i]) != int} |\
+            {i: sum([self.Var.X[(i, j, w)][0] for w in self.Data.Workers for j in self.Data.Tasks +
+                     self.Data.Pauses[w] + [self.Data.Houses[w]] if (i, j, w) in self.Var.X]) for i in self.Var.T.keys() if type(self.Var.T[i]) == int}
+
+        self.Var.Indicateur = {"moments repas": rep}
