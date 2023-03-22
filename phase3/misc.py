@@ -1,21 +1,14 @@
-from ..data import lecture
-
-
-def create_population(initial_population_number, endroit, instance):
+def create_population(data, initial_population_number):
     ''' 
     This function encapsulates the initial population creation, which basically
     iterates initial_population_number times, creating a new individual
     in each iteration and appending it to the list of the initial population
     until its finished.
-    
+
     Parameters
     ----------
     initial_population_number: int
         Number of individuals to be genereted for the initial population.
-    endroit: str
-        Name of the city/country of a problem
-    instance: str
-        Number of the instance, attention to the str type.
 
     Returns
     -------
@@ -24,11 +17,10 @@ def create_population(initial_population_number, endroit, instance):
         solutions to be used initially by the algorithm.
     '''
 
-    df_Workers, _, df_Task, _ = lecture(endroit, instance)
+    population = []
 
-    # Sets
-    workers = list(df_Workers.index)
-    tasks = list(df_Task.index)
+    workers = data.Workers
+    tasks = data.Tasks
 
     for i in range(initial_population_number):
         population.append(create_individual(workers, tasks))
@@ -81,18 +73,58 @@ def individuals_copy(individuals, number_of_copies):
     return copy_of_individuals
 
 
-def select_best_group():
-    pass
+def select_best_group(generation, n):
+    '''
+    This function picks the n best solutions from a generation.
+    In other words, it calculates the cost value of every individual
+    in a group of individuals (we can call it a generation or a group
+    of solutions) and picks the ones that have the n best cost value.
+
+    Parameters
+    ----------
+    generation: list
+        List of individuals (dictionaries).
+    n: int
+        Integer that tells how many solutions you want to pick from
+        the generation
+
+    Returns
+    -------
+    best_group: list
+        List containing the n individuals that have the best cost
+        values.
+    '''
+
+    generation_cost = [calculate_cost(generation[i])
+                       for i in range(len(generation))]
+    sorted_indexes = sorted(range(len(generation_cost)),
+                            key=lambda i: generation_cost[i], reverse=True)[:n]
+    best_group = [generation[i] for i in sorted_indexes]
+
+    return best_group
 
 
-def best_cost():
-    pass
+def find_best_solution(generation):
+    '''
+    This is a special case of selecting best group for the case where
+    n = 1. It means that this function picks the solution that have the
+    best cost value from a generation (a group of individuals).
+
+    Parameters
+    ----------
+    generation: list
+        List of individuals (dictionaries).
+
+    Returns
+    -------
+    dict
+        It returns the individual with the best cost value.
+    '''
+
+    return select_best_group(generation, 1)[0]
 
 
-def find_best_solution():
-    pass
-
-def calculate_cost(individual):
+def calculate_cost(data, individual):
     '''
     This function calculates the cost value for a given individual.
     This means that it should calculate the total task duration of each
@@ -103,11 +135,37 @@ def calculate_cost(individual):
     ----------
     individual: dict
         Dictionary representing a feasible solution.
-    
+
     Returns
     -------
     cost: int
         Cost value of the individual
     '''
 
-    
+    total_task_duration = 0
+    total_travel_time = 0
+
+    # iterate over the list of tasks of the workers
+    for task_list in individual.values():
+        for i in range(len(task_list)):
+            task_duration = data.d(task[i])
+            total_task_duration += task_duration
+            if i != 0:
+                travel_time = data.t({task[i], task[i-1]})
+                total_travel_time += travel_time
+
+        if len(task_list) > 0:
+
+            # retrieve the worker name
+            worker = task_list.index(task_list)
+
+            # taking into account the home to first task and last task to
+            # home travel time
+            home_to_task_travel_time = data.t({data.Houses(worker), task[0]})
+            total_travel_time += home_to_task_travel_time
+            task_to_home_travel_time = data.t({task[-1], data.Houses(worker)})
+            total_travel_time += task_to_home_travel_time
+
+    cost = total_task_duration - total_travel_time
+
+    return cost

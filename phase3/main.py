@@ -1,9 +1,13 @@
-from misc import create_population, individuals_copy, select_best, best_cost, find_best_solution
+from misc import create_population, individuals_copy, select_best_group, find_best_solution
 from mutation import mutation
+from ..data import Data
 
 initial_population_number = 10
+best_future_generation_number = 10
 number_of_copies = 10
 stop_cost = 1
+endroit = ""
+instance = ""
 
 
 def main():
@@ -31,7 +35,10 @@ def main():
         in the standard format.
 
     '''
-    individuals = create_population(initial_population_number)
+
+    data = Data(endroit, instance)
+
+    individuals = create_population(data, initial_population_number)
     optimum = False
     while not optimum:
         future_generation = individuals_copy(individuals, number_of_copies)
@@ -40,13 +47,14 @@ def main():
             future_generation.remove(individual)
             future_generation.append(new_individual)
         # calculate the cost values, select the best ones
-        best_new_individuals = select_best(future_generation)
+        best_new_individuals = select_best_group(
+            future_generation, best_future_generation_number)
         # check if there is a best individual that is good enough
         # we're probably gonna change this to keep iterating until
         # we cant find a neighbourhood or something like that, it will
         # depend on the metaheuristic used I guess (VNS, simulated annealing, etc)
-        if best_cost(best_new_individuals) <= stop_cost:
+        best_solution = find_best_solution(best_new_individuals)
+        if calculate_cost(best_solution) <= stop_cost:
             optimum = True
-            best_solution = find_best_solution(best_new_individuals)
 
     return best_solution
