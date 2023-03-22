@@ -332,6 +332,15 @@ class Result:
                     [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
                 begin = max(fin, self.Data.beta[w])
 
+                if begin < 13*60:
+                    begin = 13*60
+                    for u in self.Data.Unva[task]:
+                        if self.Data.C[u][0] <= begin <= self.Data.C[u][1]:
+                            begin = self.Data.C[1]
+
+                    if begin > self.Data.b[task]:
+                        return False
+
             fin = begin
 
             for p in Indisp.keys():
@@ -352,6 +361,15 @@ class Result:
                         rep.append(
                             [w, int(max(720, T[lastTask] + self.Data.d[lastTask]))])
                         begin = max(fin, self.Data.beta[w])
+
+                        if begin < 13*60:
+                            begin = 13*60
+                            for u in self.Data.Unva[task]:
+                                if self.Data.C[u][0] <= begin <= self.Data.C[u][1]:
+                                    begin = self.Data.C[1]
+
+                            if begin > self.Data.b[task]:
+                                return False
 
                     fin = begin
 

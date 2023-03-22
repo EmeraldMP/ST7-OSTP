@@ -48,6 +48,15 @@ def feasibility(gene, data):
                     # print(w)
                     return False
 
+                if begin < 13*60:
+                    begin = 13*60
+                    for u in data.Unva[task]:
+                        if data.C[u][0] <= begin <= data.C[u][1]:
+                            begin = data.C[1]
+
+                    if begin > data.b[task]:
+                        return False
+
             fin = begin + data.d[task]
 
             if fin > data.b[task]:
@@ -77,6 +86,15 @@ def feasibility(gene, data):
                         if not begin:
                             # print(w)
                             return False
+
+                        if begin < 13*60:
+                            begin = 13*60
+                            for u in data.Unva[task]:
+                                if data.C[u][0] <= begin <= data.C[u][1]:
+                                    begin = data.C[1]
+
+                            if begin > data.b[task]:
+                                return False
 
                     fin = begin + data.d[task]
 
