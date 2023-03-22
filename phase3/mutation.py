@@ -115,6 +115,7 @@ def mutate_reassign(individual, data):
     return individual
 
 
+# ToDo: look at it and modify if necessary
 def mutate_reorder(individual, data=None):
     num_workers = len(individual)
     worker = random.randrange(num_workers)
@@ -147,23 +148,38 @@ def mutate_remove(individual, data):
 
     tasks = individual[worker]
 
-    time_matrix = data.t    # access time matrix by e.g. data.t[][] with task or data.Houses[worker]
+    # compute for each task the travel time to it and from it to following task and use those values as probabilities
     probs_task = []
     for task_ID in range(len(tasks)):
+        # first task of worker
         if task_ID == 0:
-            probs_task.append()
+            task = tasks[task_ID]
+            post_task = tasks[task_ID + 1]
+            # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
+            probs_task.append(data.t[data.Houses[worker]][task] + data.t[task][post_task])
+        # last task of worker
         elif task_ID == len(tasks)-1:
-            probs_task.append()
+            task = tasks[task_ID]
+            pre_task = tasks[task_ID - 1]
+            # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
+            probs_task.append(data.t[pre_task][task] + data.t[task][data.Houses[worker]])
         else:
-            probs_task.append()
+            task = tasks[task_ID]
+            pre_task = tasks[task_ID-1]
+            post_task = tasks[task_ID+1]
+            # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
+            probs_task.append(data.t[pre_task][task]+data.t[task][post_task])
 
-    task_ID = random.randrange(len(tasks))
-    tasks.pop(task_ID)
+    # remove a task based on probabilities
+    task = random.choices(tasks, weights=probs_task, k=1)
+    tasks.remove(task)
+
     individual[worker] = tasks
 
     return individual
 
 
+# ToDo: look at it and modify if necessary
 def mutate_insert(individual, task):
     num_workers = len(individual)
     worker = random.randrange(num_workers)
