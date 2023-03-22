@@ -1,7 +1,7 @@
 """
-individuals obey the following coding:
-list comprising several list, one for each worker and containing the their assigned tasks
-[[], [], ..., []]
+individuals obey the following representation:
+a dictionary consisting of several lists, one for each worker and containing their assigned tasks
+{"W1":[T1, T5, ...], "W2": [T0, T16, T10], ..., "W10": [T9]}
 """
 import random
 
