@@ -1,12 +1,13 @@
 from misc import create_population, individuals_copy, select_best, best_cost, find_best_solution
 from mutation import mutation
+from data import Data
 
 initial_population_number = 10
 number_of_copies = 10
 stop_cost = 1
 
 
-def main():
+def main(endroit, instance):
     '''
     This function implements the main algorithm to be used in phase 3. It
     orchestrates all the different functions, most importantly dealing with
@@ -31,7 +32,9 @@ def main():
         in the standard format.
 
     '''
-    individuals = create_population(initial_population_number)
+    data = Data(endroit, instance)
+
+    individuals = create_population(initial_population_number, data)
     optimum = False
     while not optimum:
         future_generation = individuals_copy(individuals, number_of_copies)
