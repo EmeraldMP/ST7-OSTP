@@ -1,4 +1,4 @@
-from misc import create_population, individuals_copy, select_best_group, find_best_solution
+from misc import create_population, individuals_copy, select_best_group, find_best_solution, calculate_cost
 from mutation import mutation
 from ..data import Data
 
@@ -10,7 +10,7 @@ endroit = ""
 instance = ""
 
 
-def main():
+def main(endroit, instance):
     '''
     This function implements the main algorithm to be used in phase 3. It
     orchestrates all the different functions, most importantly dealing with

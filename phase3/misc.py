@@ -1,3 +1,53 @@
+from ..data import lecture
+import numpy as np
+from check_constraints import feasibility
+import random
+
+
+def vector_unitario(vector):
+    '''
+    Recibe un vector y lo retorna normalizado.
+    '''
+
+    return vector / np.linalg.norm(vector)
+
+
+def angulo_eje(vector):
+    '''
+    Calcula el ángulo que existe entre un vector y el eje i tongo
+    '''
+
+    eje_x = (1, 0)
+    v_u = vector_unitario(vector)
+
+    if v_u[1] >= eje_x[1]:
+        return (np.arccos(np.clip(np.dot(eje_x, v_u), -1.0, 1.0))*180)/np.pi
+    else:
+        return ((2*np.pi - np.arccos(np.clip(np.dot(eje_x, v_u), -1.0, 1.0)))*180)/np.pi
+
+
+def angulo_puntos(v1, v2):
+    '''
+    Calcula el ángulo que existe entre dos vectores v1 y v2
+    '''
+
+    return angulo_eje((v2[0]-v1[0], v2[1]-v1[1]))
+
+
+def cycle():
+    nodos = list()
+    for it in range(6):
+        i = random.randint(0, 10)
+        j = random.randint(0, 10)
+        nodos.append((i, j))
+
+    pares = list()
+    for nodo in nodos:
+        pares.append((nodo, angulo_puntos((5, 5), nodo)))
+    pares.sort(key=lambda x: x[1])
+    pares
+
+
 def create_population(data, initial_population_number):
     ''' 
     This function encapsulates the initial population creation, which basically
@@ -19,16 +69,13 @@ def create_population(data, initial_population_number):
 
     population = []
 
-    workers = data.Workers
-    tasks = data.Tasks
-
     for i in range(initial_population_number):
-        population.append(create_individual(workers, tasks))
+        population.append(create_individual(data))
 
     return population
 
 
-def create_individual(tasks, workers):
+def create_individual(data):
     '''
     There will enter the "glouton" function the teacher was talking about
     I guess, we have to search for a good way to create initial solutions.
@@ -47,7 +94,25 @@ def create_individual(tasks, workers):
         view of the algorithm (workers are keys, and its values are the
         lists containing the tasks that they make in a given solution)
     '''
+
     individual = {}
+    tasks = [t for t in data.Tasks]
+
+    for w in data.Workers:
+        individual[w] = []
+
+        while feasibility(individual):
+
+            tri = sorted(data.t[data.Houses[w]].keys(),
+                         key=lambda t: data.t[data.Houses[w]][t])
+            i = 0
+            while tri[i] not in tasks and tri[i] not in data.TasksW[w]:
+                i += 1
+
+            individual[w].append(tri[i])
+            tasks.remove(tri[i])
+
+        individual[w].append(tri[i])
 
     return individual
 
