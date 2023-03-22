@@ -1,7 +1,7 @@
 from ..data import lecture
 
 
-def create_population(initial_population_number):
+def create_population(initial_population_number, endroit, instance):
     '''
     There will enter the "glouton" function the teacher was talking about
     I guess, we have to search for a good way to create initial solutions.
