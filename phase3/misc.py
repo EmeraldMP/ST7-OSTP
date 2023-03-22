@@ -2,14 +2,20 @@ from ..data import lecture
 
 
 def create_population(initial_population_number, endroit, instance):
-    '''
-    There will enter the "glouton" function the teacher was talking about
-    I guess, we have to search for a good way to create initial solutions.
-
+    ''' 
+    This function encapsulates the initial population creation, which basically
+    iterates initial_population_number times, creating a new individual
+    in each iteration and appending it to the list of the initial population
+    until its finished.
+    
     Parameters
     ----------
     initial_population_number: int
         Number of individuals to be genereted for the initial population.
+    endroit: str
+        Name of the city/country of a problem
+    instance: str
+        Number of the instance, attention to the str type.
 
     Returns
     -------
@@ -75,7 +81,7 @@ def individuals_copy(individuals, number_of_copies):
     return copy_of_individuals
 
 
-def select_best():
+def select_best_group():
     pass
 
 
@@ -85,3 +91,23 @@ def best_cost():
 
 def find_best_solution():
     pass
+
+def calculate_cost(individual):
+    '''
+    This function calculates the cost value for a given individual.
+    This means that it should calculate the total task duration of each
+    worker and subtract the total travel time from it.
+    As a first approach, it does not take into account the unavailabilities.
+
+    Parameters
+    ----------
+    individual: dict
+        Dictionary representing a feasible solution.
+    
+    Returns
+    -------
+    cost: int
+        Cost value of the individual
+    '''
+
+    
