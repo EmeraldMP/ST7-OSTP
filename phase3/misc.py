@@ -213,10 +213,10 @@ def calculate_cost(data, individual):
     # iterate over the list of tasks of the workers
     for task_list in individual.values():
         for i in range(len(task_list)):
-            task_duration = data.d(task[i])
+            task_duration = data.d(task_list[i])
             total_task_duration += task_duration
             if i != 0:
-                travel_time = data.t({task[i], task[i-1]})
+                travel_time = data.t({task_list[i], task_list[i-1]})
                 total_travel_time += travel_time
 
         if len(task_list) > 0:
@@ -226,9 +226,11 @@ def calculate_cost(data, individual):
 
             # taking into account the home to first task and last task to
             # home travel time
-            home_to_task_travel_time = data.t({data.Houses(worker), task[0]})
+            home_to_task_travel_time = data.t(
+                {data.Houses(worker), task_list[0]})
             total_travel_time += home_to_task_travel_time
-            task_to_home_travel_time = data.t({task[-1], data.Houses(worker)})
+            task_to_home_travel_time = data.t(
+                {task_list[-1], data.Houses(worker)})
             total_travel_time += task_to_home_travel_time
 
     cost = total_task_duration - total_travel_time
