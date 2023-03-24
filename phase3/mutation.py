@@ -1,7 +1,7 @@
 """
 individuals obey the following representation:
 a dictionary consisting of several lists, one for each worker and containing their assigned tasks
-{'W1': [5, 1], 'W2': [0, 16, 10], 'W3': [9]}
+{'W1': [T5, T1], 'W2': [T0, T16, T10], 'W3': [T9]}
 """
 import random
 import numpy as np
@@ -76,14 +76,30 @@ def mutate_flip(individual_ini, data):
     return individual
 
 
-def mutate_reassign(individual, data):
+def pickWorker(individual, num_worker=1):
+    """
+    picks workers such that a worker is more likely to be picked the more tasks are assigned to them.
+    :param individual: worker-task assignment
+    :param num_worker: number of workers that should be picked
+    :return: list of picked workers
+    """
     workers = list(individual)
     # use the number of tasks of a worker as their probability to be affected by reassignment
     # a worker is more likely to be chosen if more tasks are allocated to them
-    probs1 = [len(individual[worker]) for worker in workers]
+    probs = [len(individual[worker]) for worker in workers]
+
+    # make sure that not more workers than available are picked
+    num_worker = min(num_worker, len(workers))
+
+    # pick workers
+    return random.choices(workers, weights=probs, k=num_worker)
+
+
+def mutate_reassign(individual, data):
+    workers = list(individual)
 
     # pick a worker from which a task is taken
-    worker1 = random.choices(workers, weights=probs1, k=1)
+    worker1 = pickWorker(individual)
 
     # adjust probs
     # a worker is more likely to be chosen if less tasks are allocated to them
@@ -106,7 +122,7 @@ def mutate_reassign(individual, data):
         if task in data.TasksW[worker2]:
             #  reassign the task to worker 2 at a random place
             individual[worker1].remove(task)
-            individual[worker2].insert(random.randrange(len(individual[worker2])+1), task)
+            individual[worker2].insert(random.randrange(len(individual[worker2]) + 1), task)
 
             check = False
 
@@ -115,38 +131,53 @@ def mutate_reassign(individual, data):
     return individual
 
 
-# ToDo: look at it and modify if necessary
 def mutate_reorder(individual, data=None):
-    num_workers = len(individual)
-    worker = random.randrange(num_workers)
+    # pick a worker
+    worker = pickWorker(individual)
+
     tasks = individual[worker]
-    task1 = random.randrange(len(tasks))
-    task2 = random.randrange(len(tasks))
+    # pick two tasks
+    task1 = pickTask(individual, worker, data)
+    task2 = task1
+    while task2 == task1:
+        task2 = random.randrange(len(tasks))
+
+    # reorder tasks of worker by swapping task1 and task2
     tasks = swapPositions(tasks, task1, task2)
     individual[worker] = tasks
+
     return individual
 
 
-def swapPositions(list, pos1, pos2):
-    first_ele = list.pop(pos1)
-    second_ele = list.pop(pos2-1)
+def swapPositions(list, el1, el2):
+    """
+    swaps the position of two elements in a list
+    :param list: original list
+    :param el1: first element
+    :param el2: second element
+    :return: reordered list
+    """
+    index1 = list.index(el1)
+    index2 = list.index(el2)
 
-    list.insert(pos1, second_ele)
-    list.insert(pos2, first_ele)
+    list[index1], list[index2] = list[index2], list[index1]
 
     return list
 
 
-def mutate_remove(individual, data):
-    workers = list(individual)
-    # use the number of tasks of a worker as their probability to be affected by reassignment
-    # a worker is more likely to be chosen if more tasks are allocated to them
-    probs_worker = [len(individual[worker]) for worker in workers]
-
-    # pick a worker from which a task is taken
-    worker = random.choices(workers, weights=probs_worker, k=1)
-
+def pickTask(individual, worker, data, num_tasks=1):
+    """
+    picks a task of a worker such that a task more likely to be picked if the travel time to it and from it are larger
+    :param individual:
+    :param worker:
+    :param data:
+    :param num_tasks: number of tasks that should be picked
+    :return: a task of the worker
+    """
     tasks = individual[worker]
+
+    # make sure that not more tasks than available are picked
+    num_tasks = min(num_tasks, len(tasks))
 
     # compute for each task the travel time to it and from it to following task and use those values as probabilities
     probs_task = []
@@ -158,20 +189,30 @@ def mutate_remove(individual, data):
             # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
             probs_task.append(data.t[data.Houses[worker]][task] + data.t[task][post_task])
         # last task of worker
-        elif task_ID == len(tasks)-1:
+        elif task_ID == len(tasks) - 1:
             task = tasks[task_ID]
             pre_task = tasks[task_ID - 1]
             # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
             probs_task.append(data.t[pre_task][task] + data.t[task][data.Houses[worker]])
         else:
             task = tasks[task_ID]
-            pre_task = tasks[task_ID-1]
-            post_task = tasks[task_ID+1]
+            pre_task = tasks[task_ID - 1]
+            post_task = tasks[task_ID + 1]
             # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
-            probs_task.append(data.t[pre_task][task]+data.t[task][post_task])
+            probs_task.append(data.t[pre_task][task] + data.t[task][post_task])
+
+    # pick tasks based on probabilities
+    return random.choices(tasks, weights=probs_task, k=num_tasks)
+
+
+def mutate_remove(individual, data):
+    # pick a worker from which a task is removed
+    worker = pickWorker(individual)
+
+    tasks = individual[worker]
 
     # remove a task based on probabilities
-    task = random.choices(tasks, weights=probs_task, k=1)
+    task = pickTask(individual, worker, data)
     tasks.remove(task)
 
     individual[worker] = tasks
@@ -188,4 +229,3 @@ def mutate_insert(individual, task):
     tasks.insert(pos, task)
     individual[worker] = tasks
     return individual
-
