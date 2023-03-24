@@ -73,7 +73,7 @@ def distance_matrix(nodes):
             dist_matrix[node_i][node_j] = int(np.ceil((dist / VELOCITY) * 60))
     return dist_matrix
 
-# read the data in the excel to transfom them in panda dataframes
+# read the data in the Excel to transform them in panda dataframes
 
 
 def lecture(endroit, instance):
@@ -142,15 +142,15 @@ def créer_ensemble(endroit, instance):
                 d_pause[pause_name] = b_pause[pause_name] - a_pause[pause_name]
             Pauses[w] = pause_list
 
-    # Opening time for taks i
+    # Opening time for task i
     a = df_Task.apply(lambda x: int(time_to_minutes(
         x['OpeningTime'])), axis=1).to_dict() | a_pause
 
-    # Closing time for taks i
+    # Closing time for task i
     b = df_Task.apply(lambda x: int(time_to_minutes(
         x['ClosingTime'])), axis=1).to_dict() | b_pause
 
-    # time worker w start working
+    # time at which worker w starts working
     alpha = df_Workers.apply(lambda x: int(
         time_to_minutes(x['WorkingStartTime'])), axis=1).to_dict()
 
@@ -172,7 +172,7 @@ def créer_ensemble(endroit, instance):
 
     r = df_aux.to_dict('index')
 
-    # Denfine the nodes
+    # Define the nodes
     nodes = read_lat_log(dict_Workers, Houses) | read_lat_log(
         dict_Task) | PauseNode
     nodes
@@ -201,7 +201,7 @@ def créer_ensemble(endroit, instance):
 
             Unva[i] = unva_list
 
-    # Define a dictionnary to access the tasks availables for a given worker according to their skills
+    # Define a dictionary to access the tasks available for a given worker according to their skills
     Cap = {}
     for w in Workers:
         for i in Tasks:

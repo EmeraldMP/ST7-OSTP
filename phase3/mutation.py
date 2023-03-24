@@ -2,17 +2,17 @@
 individuals obey the following representation:
 a dictionary consisting of several lists, one for each worker and containing their assigned tasks
 {'W1': [T5, T1], 'W2': [T0, T16, T10], 'W3': [T9]}
+
+mutation strategies:
+- exchanging tasks amongst workers
+- reassign task of one worker to another worker
+- reorder tasks of a single worker
+- add undone task to a worker
+- remove a task from a worker
 """
 import random
 import numpy as np
 
-
-# mutation strategies:
-# exchanging tasks amongst workers
-# reassign task of one worker to another worker
-# reorder tasks of a single worker
-# add undone task to a worker
-# remove a task from a worker
 
 def mutate_flip(individual_ini, data):
     # define time matrix as global variable
@@ -57,7 +57,7 @@ def mutate_flip(individual_ini, data):
     dist_mat1 = dist_mat1 / dist_mat1[-1]
     dist_mat2 = dist_mat2 / dist_mat2[-1]
 
-    alpha1 = random.random();
+    alpha1 = random.random()
     alpha2 = random.random()
 
     comparation1 = list(dist_mat1 < alpha1) + [False]
@@ -76,17 +76,26 @@ def mutate_flip(individual_ini, data):
     return individual
 
 
-def pickWorker(individual, num_worker=1):
+def pickWorker(individual, crit="more", num_worker=1):
     """
-    picks workers such that a worker is more likely to be picked the more tasks are assigned to them.
+    picks workers such that a worker is more likely to be picked based on a criterion.
     :param individual: worker-task assignment
+    :param crit: criterion based on which probabilities are calculated
+                    "more" means higher probability if more tasks
+                    "less" means higher probability if less tasks
     :param num_worker: number of workers that should be picked
     :return: list of picked workers
     """
     workers = list(individual)
-    # use the number of tasks of a worker as their probability to be affected by reassignment
-    # a worker is more likely to be chosen if more tasks are allocated to them
-    probs = [len(individual[worker]) for worker in workers]
+
+    assert crit in ["more", "less"], "Entered criterion is unknown"
+    # use the number of tasks of a worker to calculate their probability to be picked
+    if crit == "more":
+        # a worker is more likely to be chosen if more tasks are allocated to them
+        probs = [len(individual[worker]) for worker in workers]
+    else:
+        # a worker is more likely to be chosen if less tasks are allocated to them
+        probs = [1 / (1 + len(individual[worker])) for worker in workers]
 
     # make sure that not more workers than available are picked
     num_worker = min(num_worker, len(workers))
@@ -137,7 +146,7 @@ def mutate_reorder(individual, data=None):
 
     tasks = individual[worker]
     # pick two tasks
-    task1 = pickTask(individual, worker, data)
+    task1 = pickTask(tasks, worker, data)
     task2 = task1
     while task2 == task1:
         task2 = random.randrange(len(tasks))
@@ -165,16 +174,16 @@ def swapPositions(list, el1, el2):
     return list
 
 
-def pickTask(individual, worker, data, num_tasks=1):
+def pickTask(tasks, worker, data, num_tasks=1):
     """
     picks a task of a worker such that a task more likely to be picked if the travel time to it and from it are larger
-    :param individual:
+    :param tasks: list of tasks
     :param worker:
     :param data:
     :param num_tasks: number of tasks that should be picked
     :return: a task of the worker
     """
-    tasks = individual[worker]
+    # tasks = individual[worker]
 
     # make sure that not more tasks than available are picked
     num_tasks = min(num_tasks, len(tasks))
@@ -212,7 +221,7 @@ def mutate_remove(individual, data):
     tasks = individual[worker]
 
     # remove a task based on probabilities
-    task = pickTask(individual, worker, data)
+    task = pickTask(tasks, worker, data)
     tasks.remove(task)
 
     individual[worker] = tasks
@@ -220,12 +229,41 @@ def mutate_remove(individual, data):
     return individual
 
 
-# ToDo: look at it and modify if necessary
-def mutate_insert(individual, task):
-    num_workers = len(individual)
-    worker = random.randrange(num_workers)
+def mutate_insert(individual, data):
+    # pick a worker such that it is more likely to pick one with less tasks
+    worker = pickWorker(individual, crit="less")
+
+    task = None
+    undoneTasks = []
+    already_checked_workers = []
+    cnt = 0
+    num_workers = len(list(individual))
+    while len(undoneTasks) == 0:
+        if cnt == num_workers:
+            # if there are no undone tasks
+            return individual
+
+        # determine which tasks (that can be done by the picked worker) have not been assigned yet
+        for t in data.TasksW:
+            if t not in individual[worker]:
+                undoneTasks.append(t)
+
+        # if there are no undone tasks, pick another worker
+        if len(undoneTasks) == 0:
+            already_checked_workers.append(worker)
+            while worker in already_checked_workers:
+                worker = pickWorker(individual, crit="less")
+            cnt += 1
+        else:
+            # pick a task from undone tasks
+            task = pickTask(undoneTasks, worker, data)
+
+    assert task is not None, "no task was picked!"
+
+    # insert the task in worker's task list at a random position
     tasks = individual[worker]
     pos = random.randrange(len(tasks))
     tasks.insert(pos, task)
     individual[worker] = tasks
+
     return individual
