@@ -76,34 +76,6 @@ def mutate_flip(individual_ini, data):
     return individual
 
 
-def pickWorker(individual, crit="more", num_worker=1):
-    """
-    picks workers such that a worker is more likely to be picked based on a criterion.
-    :param individual: worker-task assignment
-    :param crit: criterion based on which probabilities are calculated
-                    "more" means higher probability if more tasks
-                    "less" means higher probability if less tasks
-    :param num_worker: number of workers that should be picked
-    :return: list of picked workers
-    """
-    workers = list(individual)
-
-    assert crit in ["more", "less"], "Entered criterion is unknown"
-    # use the number of tasks of a worker to calculate their probability to be picked
-    if crit == "more":
-        # a worker is more likely to be chosen if more tasks are allocated to them
-        probs = [len(individual[worker]) for worker in workers]
-    else:
-        # a worker is more likely to be chosen if less tasks are allocated to them
-        probs = [1 / (1 + len(individual[worker])) for worker in workers]
-
-    # make sure that not more workers than available are picked
-    num_worker = min(num_worker, len(workers))
-
-    # pick workers
-    return random.choices(workers, weights=probs, k=num_worker)
-
-
 def mutate_reassign(individual, data):
     workers = list(individual)
 
@@ -156,62 +128,6 @@ def mutate_reorder(individual, data=None):
     individual[worker] = tasks
 
     return individual
-
-
-def swapPositions(list, el1, el2):
-    """
-    swaps the position of two elements in a list
-    :param list: original list
-    :param el1: first element
-    :param el2: second element
-    :return: reordered list
-    """
-    index1 = list.index(el1)
-    index2 = list.index(el2)
-
-    list[index1], list[index2] = list[index2], list[index1]
-
-    return list
-
-
-def pickTask(tasks, worker, data, num_tasks=1):
-    """
-    picks a task of a worker such that a task more likely to be picked if the travel time to it and from it are larger
-    :param tasks: list of tasks
-    :param worker:
-    :param data:
-    :param num_tasks: number of tasks that should be picked
-    :return: a task of the worker
-    """
-    # tasks = individual[worker]
-
-    # make sure that not more tasks than available are picked
-    num_tasks = min(num_tasks, len(tasks))
-
-    # compute for each task the travel time to it and from it to following task and use those values as probabilities
-    probs_task = []
-    for task_ID in range(len(tasks)):
-        # first task of worker
-        if task_ID == 0:
-            task = tasks[task_ID]
-            post_task = tasks[task_ID + 1]
-            # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
-            probs_task.append(data.t[data.Houses[worker]][task] + data.t[task][post_task])
-        # last task of worker
-        elif task_ID == len(tasks) - 1:
-            task = tasks[task_ID]
-            pre_task = tasks[task_ID - 1]
-            # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
-            probs_task.append(data.t[pre_task][task] + data.t[task][data.Houses[worker]])
-        else:
-            task = tasks[task_ID]
-            pre_task = tasks[task_ID - 1]
-            post_task = tasks[task_ID + 1]
-            # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
-            probs_task.append(data.t[pre_task][task] + data.t[task][post_task])
-
-    # pick tasks based on probabilities
-    return random.choices(tasks, weights=probs_task, k=num_tasks)
 
 
 def mutate_remove(individual, data):
@@ -267,3 +183,87 @@ def mutate_insert(individual, data):
     individual[worker] = tasks
 
     return individual
+
+
+def pickWorker(individual, crit="more", num_worker=1):
+    """
+    picks workers such that a worker is more likely to be picked based on a criterion.
+    :param individual: worker-task assignment
+    :param crit: criterion based on which probabilities are calculated
+                    "more" means higher probability if more tasks
+                    "less" means higher probability if less tasks
+    :param num_worker: number of workers that should be picked
+    :return: list of picked workers
+    """
+    workers = list(individual)
+
+    assert crit in ["more", "less"], "Entered criterion is unknown"
+    # use the number of tasks of a worker to calculate their probability to be picked
+    if crit == "more":
+        # a worker is more likely to be chosen if more tasks are allocated to them
+        probs = [len(individual[worker]) for worker in workers]
+    else:
+        # a worker is more likely to be chosen if less tasks are allocated to them
+        probs = [1 / (1 + len(individual[worker])) for worker in workers]
+
+    # make sure that not more workers than available are picked
+    num_worker = min(num_worker, len(workers))
+
+    # pick workers
+    return random.choices(workers, weights=probs, k=num_worker)
+
+
+def pickTask(tasks, worker, data, num_tasks=1):
+    """
+    picks a task of a worker such that a task more likely to be picked if the travel time to it and from it are larger
+    :param tasks: list of tasks
+    :param worker:
+    :param data:
+    :param num_tasks: number of tasks that should be picked
+    :return: a task of the worker
+    """
+    # tasks = individual[worker]
+
+    # make sure that not more tasks than available are picked
+    num_tasks = min(num_tasks, len(tasks))
+
+    # compute for each task the travel time to it and from it to following task and use those values as probabilities
+    probs_task = []
+    for task_ID in range(len(tasks)):
+        # first task of worker
+        if task_ID == 0:
+            task = tasks[task_ID]
+            post_task = tasks[task_ID + 1]
+            # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
+            probs_task.append(data.t[data.Houses[worker]][task] + data.t[task][post_task])
+        # last task of worker
+        elif task_ID == len(tasks) - 1:
+            task = tasks[task_ID]
+            pre_task = tasks[task_ID - 1]
+            # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
+            probs_task.append(data.t[pre_task][task] + data.t[task][data.Houses[worker]])
+        else:
+            task = tasks[task_ID]
+            pre_task = tasks[task_ID - 1]
+            post_task = tasks[task_ID + 1]
+            # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
+            probs_task.append(data.t[pre_task][task] + data.t[task][post_task])
+
+    # pick tasks based on probabilities
+    return random.choices(tasks, weights=probs_task, k=num_tasks)
+
+
+def swapPositions(list, el1, el2):
+    """
+    swaps the position of two elements in a list
+    :param list: original list
+    :param el1: first element
+    :param el2: second element
+    :return: reordered list
+    """
+    index1 = list.index(el1)
+    index2 = list.index(el2)
+
+    list[index1], list[index2] = list[index2], list[index1]
+
+    return list
