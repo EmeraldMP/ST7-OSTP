@@ -14,6 +14,29 @@ import random
 import numpy as np
 
 
+def mutate(individual, data):
+    """
+    meta function for mutation operation. It picks one mutation strategy randomly and executes it
+    :param individual: original individual
+    :param data:
+    :return: mutated individual
+    """
+    strategies = ["flip", "reassign", "reorder", "remove", "add"]
+
+    # pick a strategy
+    strategy = random.choice(strategies)
+    if strategy == "flip":
+        mutate_flip(individual, data)
+    elif strategy == "reassign":
+        mutate_reassign(individual, data)
+    elif strategy == "reorder":
+        mutate_reorder(individual, data)
+    elif strategy == "remove":
+        mutate_remove(individual, data)
+    else:
+        mutate_add(individual, data)
+
+
 def mutate_flip(individual_ini, data):
     # define time matrix as global variable
     t = data.t
@@ -112,7 +135,7 @@ def mutate_reassign(individual, data):
     return individual
 
 
-def mutate_reorder(individual, data=None):
+def mutate_reorder(individual, data):
     # pick a worker
     worker = pickWorker(individual)
 
@@ -145,7 +168,7 @@ def mutate_remove(individual, data):
     return individual
 
 
-def mutate_insert(individual, data):
+def mutate_add(individual, data):
     # pick a worker such that it is more likely to pick one with less tasks
     worker = pickWorker(individual, crit="less")
 
