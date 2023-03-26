@@ -3,12 +3,7 @@ individuals obey the following representation:
 a dictionary consisting of several lists, one for each worker and containing their assigned tasks
 {'W1': [T5, T1], 'W2': [T0, T16, T10], 'W3': [T9]}
 
-mutation strategies:
-- exchanging tasks amongst workers
-- reassign task of one worker to another worker
-- reorder tasks of a single worker
-- add undone task to a worker
-- remove a task from a worker
+
 """
 import random
 import numpy as np
@@ -16,7 +11,15 @@ import numpy as np
 
 def mutate(individual, data):
     """
-    meta function for mutation operation. It picks one mutation strategy randomly and executes it
+    meta function for mutation operation. It picks one mutation strategy randomly and executes it.
+
+    mutation strategies:
+    - exchanging tasks amongst workers
+    - reassign task of one worker to another worker
+    - reorder tasks of a single worker
+    - add undone task to a worker
+    - remove a task from a worker
+
     :param individual: original individual
     :param data:
     :return: mutated individual
@@ -58,7 +61,7 @@ def mutate_flip(individual_ini, data):
     # print(dist_mat2)
 
     # if sum(dist_mat1) == 0 or sum(dist_mat2) == 0:
-    #     # we make no changes if there is no posibility of change
+    #     # we make no changes if there is no possibility of change
     #     print('AHHHHHHHHHH')
     #     return individual
 
@@ -83,14 +86,14 @@ def mutate_flip(individual_ini, data):
     alpha1 = random.random()
     alpha2 = random.random()
 
-    comparation1 = list(dist_mat1 < alpha1) + [False]
-    comparation2 = list(dist_mat2 < alpha2) + [False]
+    comparison1 = list(dist_mat1 < alpha1) + [False]
+    comparison2 = list(dist_mat2 < alpha2) + [False]
 
     idx1 = 0
     idx2 = 0
-    while comparation1[idx1]:
+    while comparison1[idx1]:
         idx1 += 1
-    while comparation2[idx2]:
+    while comparison2[idx2]:
         idx2 += 1
 
     # flip task

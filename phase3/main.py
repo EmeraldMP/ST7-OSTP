@@ -1,23 +1,16 @@
 from misc import create_population, individuals_copy, select_best_group, find_best_solution, calculate_cost
-from mutation import mutation
+from mutation import mutate
 from ..data import Data
-
-initial_population_number = 10
-best_future_generation_number = 10
-number_of_copies = 10
-stop_cost = 1
-endroit = ""
-instance = ""
 
 
 def main(endroit, instance):
-    '''
+    """
     This function implements the main algorithm to be used in phase 3. It
     orchestrates all the different functions, most importantly dealing with
     the generations, mutations, selecting the best mutations and seeing if
     we reached a good enough solution to the algorithm to be able to stop.
     Feasibility checking is done in the mutation function.
-    For the moment, it it just a sketch for us to have an idea of where and how
+    For the moment, it just a sketch for us to have an idea of where and how
     the main functions are going to be used, and what we will need to implement.
 
     It will be needed most importantly to find a good stopping criteria, which is
@@ -34,7 +27,7 @@ def main(endroit, instance):
         Dictionary containing the best solution found by the algorithm,
         in the standard format.
 
-    '''
+    """
 
     data = Data(endroit, instance)
 
@@ -43,14 +36,14 @@ def main(endroit, instance):
     while not optimum:
         future_generation = individuals_copy(individuals, number_of_copies)
         for individual in future_generation:
-            new_individual = mutation(individual)
+            new_individual = mutate(individual, data)
             future_generation.remove(individual)
             future_generation.append(new_individual)
         # calculate the cost values, select the best ones
         best_new_individuals = select_best_group(
             future_generation, best_future_generation_number)
         # check if there is a best individual that is good enough
-        # we're probably gonna change this to keep iterating until
+        # we will probably change this to keep iterating until
         # we cant find a neighbourhood or something like that, it will
         # depend on the metaheuristic used I guess (VNS, simulated annealing, etc)
         best_solution = find_best_solution(best_new_individuals)
@@ -58,3 +51,14 @@ def main(endroit, instance):
             optimum = True
 
     return best_solution
+
+
+if __name__ == '__main__':
+    initial_population_number = 10
+    best_future_generation_number = 10
+    number_of_copies = 10
+    stop_cost = 1
+    endroit = ""
+    instance = ""
+
+    main(endroit, instance)
