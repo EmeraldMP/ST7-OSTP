@@ -61,7 +61,7 @@ def main(endroit, instance):
 
 
 if __name__ == '__main__':
-    endroit = ""
-    instance = ""
+    endroit = "Ukraine"
+    instance = 3
 
     main(endroit, instance)

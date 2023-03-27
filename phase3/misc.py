@@ -2,6 +2,7 @@ from ..data import lecture
 import numpy as np
 from check_constraints import feasibility
 import random
+from copy import *
 
 
 def vector_unitario(vector):
@@ -112,7 +113,7 @@ def create_individual(data):
             individual[w].append(tri[i])
             tasks.remove(tri[i])
 
-        individual[w].append(tri[i])
+        individual[w].remove(tri[i])
 
     return individual
 
@@ -132,8 +133,8 @@ def individuals_copy(individuals, number_of_copies):
     number_of_copies: int
         Number of copies to be made for each individual.
     '''
-    copy_of_individuals = [individuals[i] *
-                           number_of_copies for i in range(number_of_copies)]
+    copy_of_individuals = [copy.deepcopy(
+        individuals[i]) for i in range(number_of_copies) for m in range(number_of_copies)]
 
     return copy_of_individuals
 
