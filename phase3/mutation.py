@@ -121,13 +121,7 @@ def mutate_reassign(individual, data):
 
 def mutate_reorder(individual, data):
     # pick a worker
-<<<<<<< HEAD
     worker = pickWorker(individual)
-    print(worker)
-=======
-    worker = pickWorker(individual)[0]
-
->>>>>>> a4a5d5fccd2eac09330f9fc7cad3f4a86d291583
     tasks = individual[worker]
 
     # cannot reorder if there are less than 2 tasks
