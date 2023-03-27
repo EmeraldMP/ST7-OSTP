@@ -145,6 +145,11 @@ def mutate_reorder(individual, data):
     worker = pickWorker(individual)
 
     tasks = individual[worker]
+
+    # cannot reorder if there are less than 2 tasks
+    if len(tasks) < 2:
+        return individual
+
     # pick two tasks
     task1 = pickTask(tasks, worker, data)
     task2 = task1
