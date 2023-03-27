@@ -29,15 +29,17 @@ def mutate(individual, data):
     # pick a strategy
     strategy = random.choice(strategies)
     if strategy == "flip":
-        mutate_flip(individual, data)
+        individual = mutate_flip(individual, data)
     elif strategy == "reassign":
-        mutate_reassign(individual, data)
+        individual = mutate_reassign(individual, data)
     elif strategy == "reorder":
-        mutate_reorder(individual, data)
+        individual = mutate_reorder(individual, data)
     elif strategy == "remove":
-        mutate_remove(individual, data)
+        individual = mutate_remove(individual, data)
     else:
-        mutate_add(individual, data)
+        individual = mutate_add(individual, data)
+
+    return individual
 
 
 def mutate_flip(individual_ini, data):
