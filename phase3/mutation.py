@@ -164,10 +164,15 @@ def mutate_reorder(individual, data):
 
 
 def mutate_remove(individual, data):
-    # pick a worker from which a task is removed
-    worker = pickWorker(individual)
+    num_tasks = 0
 
-    tasks = individual[worker]
+    # make sure that the chosen worker has at least one task
+    while num_tasks < 1:
+        # pick a worker from which a task is removed
+        worker = pickWorker(individual)
+
+        tasks = individual[worker]
+        num_tasks = len(tasks)
 
     # remove a task based on probabilities
     task = pickTask(tasks, worker, data)
