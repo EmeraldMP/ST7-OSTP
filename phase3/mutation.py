@@ -58,20 +58,6 @@ def mutate_flip(individual_ini, data):
     idx1 = random.randint(0, len(individual[w1]) - 1)
     idx2 = random.randint(0, len(individual[w2]) - 1)
 
-    # dist_mat1 = [t[data.Houses[w1]][task] if task in good_task_w2 else 0 for task in individual[w1]]
-    # dist_mat2 = [t[data.Houses[w2]][task] if task in good_task_w1 else 0 for task in individual[w2]]
-    # print(dist_mat2)
-
-    # if sum(dist_mat1) == 0 or sum(dist_mat2) == 0:
-    #     # we make no changes if there is no possibility of change
-    #     print('AHHHHHHHHHH')
-    #     return individual
-
-    # l_a = list(range(len(individual[w1])))
-
-    # idx1 = random.choices(list(range(len(individual[w1]))), weights=dist_mat1)[0]
-    # idx2 = random.choices(list(range(len(individual[w2]))), weights=dist_mat2)[0]
-
     # print(idx1, idx2)
 
     # Create distance Matrix
@@ -88,15 +74,8 @@ def mutate_flip(individual_ini, data):
     alpha1 = random.random()
     alpha2 = random.random()
 
-    comparison1 = list(dist_mat1 < alpha1) + [False]
-    comparison2 = list(dist_mat2 < alpha2) + [False]
-
-    idx1 = 0
-    idx2 = 0
-    while comparison1[idx1]:
-        idx1 += 1
-    while comparison2[idx2]:
-        idx2 += 1
+    idx1 = np.argmax(dist_mat1 >= alpha1)
+    idx2 = np.argmax(dist_mat2 >= alpha2)
 
     # flip task
     individual[w1][idx1], individual[w2][idx2] = individual[w2][idx2], individual[w1][idx1]
@@ -116,12 +95,12 @@ def mutate_reassign(individual, data):
     probs2 = [1 / (1 + len(individual[worker])) for worker in workers]
 
     # pick another worker who gets an additional task
-    worker2 = random.choices(workers, weights=probs2, k=1)
+    worker2 = random.choices(workers, weights=probs2, k=1)[0]
 
     # check whether the task can be done by worker 2...
     check = True
     cnt = 0
-    tasks = individual[worker1]
+    tasks = individual[worker1].copy()
     # ... as long as a suitable task has been found or there is no task left in tasks
     while check and cnt < len(individual[worker1]):
         # take a random task from worker 1
@@ -143,15 +122,22 @@ def mutate_reassign(individual, data):
 def mutate_reorder(individual, data):
     # pick a worker
     worker = pickWorker(individual)
-
+    print(worker)
     tasks = individual[worker]
+
+    # cannot reorder if there are less than 2 tasks
+    if len(tasks) < 2:
+        return individual
+
     # pick two tasks
     task1 = pickTask(tasks, worker, data)
     task2 = task1
-    while task2 == task1:
-        task2 = random.randrange(len(tasks))
+    if len(tasks) > 1:
+        while task2 == task1:
+            task2 = pickTask(tasks, worker, data)
 
     # reorder tasks of worker by swapping task1 and task2
+    print(tasks)
     tasks = swapPositions(tasks, task1, task2)
     individual[worker] = tasks
 
@@ -238,7 +224,7 @@ def pickWorker(individual, crit="more", num_worker=1):
     num_worker = min(num_worker, len(workers))
 
     # pick workers
-    return random.choices(workers, weights=probs, k=num_worker)
+    return random.choices(workers, weights=probs, k=num_worker)[0]
 
 
 def pickTask(tasks, worker, data, num_tasks=1):
@@ -278,23 +264,23 @@ def pickTask(tasks, worker, data, num_tasks=1):
             probs_task.append(data.t[pre_task][task] + data.t[task][post_task])
 
     # pick tasks based on probabilities
-    return random.choices(tasks, weights=probs_task, k=num_tasks)
+    return random.choices(tasks, weights=probs_task, k=num_tasks)[0]
 
 
-def swapPositions(list, el1, el2):
+def swapPositions(liste, el1, el2):
     """
     swaps the position of two elements in a list
-    :param list: original list
+    :param liste: original list
     :param el1: first element
     :param el2: second element
     :return: reordered list
     """
-    index1 = list.index(el1)
-    index2 = list.index(el2)
+    index1 = liste.index(el1)
+    index2 = liste.index(el2)
 
-    list[index1], list[index2] = list[index2], list[index1]
-
-    return list
+    liste[index1], liste[index2] = liste[index2], liste[index1]
+    
+    return liste
 
 
 if __name__== '__main__':
@@ -314,14 +300,17 @@ if __name__== '__main__':
     # Import the Data class from the data module
     from data import Data
 
-    gene_ini = {'Ambre': ['T8', 'T10', 'T7', 'T9', 'T2'],
-            'Valentin': ['T5', 'T3', 'T6', 'T4']}
+    gene_ini = {'Ambre': ['T8', 'T10', 'T7', 'T4', 'T2'],
+            'Valentin': ['T5', 'T3', 'T6', 'T9']}
+    print('INITIAL GENE')
+    print(gene_ini)
     
     data = Data("Bordeaux", 1)
-    
-    new_gene = mutate(gene_ini, data)
 
-    print('--------------------------------------------------------')
+    new_gene = mutate_reorder(gene_ini, data)
+
+    print('-------------------------------------------------')
+    print('MODIFY GENE')
     print(new_gene)
 
 # Good gene 
