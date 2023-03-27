@@ -239,10 +239,10 @@ def pickWorker(individual, crit="more", num_worker=1):
     # use the number of tasks of a worker to calculate their probability to be picked
     if crit == "more":
         # a worker is more likely to be chosen if more tasks are allocated to them
-        probs = [len(individual[worker]) for worker in workers]
+        probs = [(0.001 + len(individual[worker])) for worker in workers]
     else:
         # a worker is more likely to be chosen if less tasks are allocated to them
-        probs = [1 / (1 + len(individual[worker])) for worker in workers]
+        probs = [1 / (0.001 + len(individual[worker])) for worker in workers]
 
     # make sure that not more workers than available are picked
     num_worker = min(num_worker, len(workers))
