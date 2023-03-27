@@ -108,7 +108,7 @@ def mutate_reassign(individual, data):
     workers = list(individual)
 
     # pick a worker from which a task is taken
-    worker1 = pickWorker(individual)
+    worker1 = pickWorker(individual)[0]
 
     # adjust probs
     # a worker is more likely to be chosen if less tasks are allocated to them
@@ -142,7 +142,7 @@ def mutate_reassign(individual, data):
 
 def mutate_reorder(individual, data):
     # pick a worker
-    worker = pickWorker(individual)
+    worker = pickWorker(individual)[0]
 
     tasks = individual[worker]
 
@@ -151,7 +151,7 @@ def mutate_reorder(individual, data):
         return individual
 
     # pick two tasks
-    task1 = pickTask(tasks, worker, data)
+    task1 = pickTask(tasks, worker, data)[0]
     task2 = task1
     while task2 == task1:
         task2 = random.randrange(len(tasks))
@@ -169,13 +169,13 @@ def mutate_remove(individual, data):
     # make sure that the chosen worker has at least one task
     while num_tasks < 1:
         # pick a worker from which a task is removed
-        worker = pickWorker(individual)
+        worker = pickWorker(individual)[0]
 
         tasks = individual[worker]
         num_tasks = len(tasks)
 
     # remove a task based on probabilities
-    task = pickTask(tasks, worker, data)
+    task = pickTask(tasks, worker, data)[0]
     tasks.remove(task)
 
     individual[worker] = tasks
@@ -185,7 +185,7 @@ def mutate_remove(individual, data):
 
 def mutate_add(individual, data):
     # pick a worker such that it is more likely to pick one with less tasks
-    worker = pickWorker(individual, crit="less")
+    worker = pickWorker(individual, crit="less")[0]
 
     task = None
     undoneTasks = []
@@ -206,11 +206,11 @@ def mutate_add(individual, data):
         if len(undoneTasks) == 0:
             already_checked_workers.append(worker)
             while worker in already_checked_workers:
-                worker = pickWorker(individual, crit="less")
+                worker = pickWorker(individual, crit="less")[0]
             cnt += 1
         else:
             # pick a task from undone tasks
-            task = pickTask(undoneTasks, worker, data)
+            task = pickTask(undoneTasks, worker, data)[0]
 
     assert task is not None, "no task was picked!"
 
