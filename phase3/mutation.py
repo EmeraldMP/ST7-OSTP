@@ -87,7 +87,7 @@ def mutate_reassign(individual, data):
     workers = list(individual)
 
     # pick a worker from which a task is taken
-    worker1 = pickWorker(individual)[0]
+    worker1 = pickWorker(individual)
 
     # adjust probs
     # a worker is more likely to be chosen if less tasks are allocated to them
@@ -134,11 +134,10 @@ def mutate_reorder(individual, data):
         return individual
 
     # pick two tasks
-    task1 = pickTask(tasks, worker, data)[0]
+    task1 = pickTask(tasks, worker, data)
     task2 = task1
-    if len(tasks) > 1:
-        while task2 == task1:
-            task2 = pickTask(tasks, worker, data)
+    while task2 == task1:
+        task2 = pickTask(tasks, worker, data)
 
     # reorder tasks of worker by swapping task1 and task2
     print(tasks)
@@ -154,13 +153,13 @@ def mutate_remove(individual, data):
     # make sure that the chosen worker has at least one task
     while num_tasks < 1:
         # pick a worker from which a task is removed
-        worker = pickWorker(individual)[0]
+        worker = pickWorker(individual)
 
         tasks = individual[worker]
         num_tasks = len(tasks)
 
     # remove a task based on probabilities
-    task = pickTask(tasks, worker, data)[0]
+    task = pickTask(tasks, worker, data)
     tasks.remove(task)
 
     individual[worker] = tasks
@@ -170,41 +169,57 @@ def mutate_remove(individual, data):
 
 def mutate_add(individual, data):
     # pick a worker such that it is more likely to pick one with less tasks
-    worker = pickWorker(individual, crit="less")[0]
 
     task = None
     undoneTasks = []
-    already_checked_workers = []
-    cnt = 0
-    num_workers = len(list(individual))
-    while len(undoneTasks) == 0:
-        if cnt == num_workers:
-            # if there are no undone tasks
-            return individual
+    workers = list(individual)
+    random.shuffle(workers)
 
-        # determine which tasks (that can be done by the picked worker) have not been assigned yet
-        for t in data.TasksW:
-            if t not in individual[worker]:
-                undoneTasks.append(t)
+    # while len(undoneTasks) == 0:
+    #     if cnt == num_workers:
+    #         # if there are no undone tasks
+    #         return individual
 
-        # if there are no undone tasks, pick another worker
-        if len(undoneTasks) == 0:
-            already_checked_workers.append(worker)
-            while worker in already_checked_workers:
-                worker = pickWorker(individual, crit="less")[0]
-            cnt += 1
+    #     # determine which tasks (that can be done by the picked worker) have not been assigned yet
+    #     for t in data.Tasks:
+    #         if t not in individual[worker]:
+    #             undoneTasks.append(t)
+
+    #     # if there are no undone tasks, pick another worker
+    #     if len(undoneTasks) == 0:
+    #         already_checked_workers.append(worker)
+    #         while worker in already_checked_workers:
+    #             worker = pickWorker(individual, crit="less")
+    #         cnt += 1
+    #     else:
+    #         # pick a task from undone tasks
+    #         task = pickTask(undoneTasks, worker, data)
+    
+    for worker in workers:
+        undoneTasks = set(data.TasksW[worker])
+
+        for T in individual.values():
+            undoneTasks -= set(T)
+
+        undoneTasks = list(undoneTasks)
+        if len(undoneTasks) < 2:
+            try:
+                task = undoneTasks[0]
+            except:
+                continue
         else:
-            # pick a task from undone tasks
-            task = pickTask(undoneTasks, worker, data)[0]
+            task = pickTask(undoneTasks, worker, data)
 
-    assert task is not None, "no task was picked!"
+        assert task is not None, "no task was picked!"
 
-    # insert the task in worker's task list at a random position
-    tasks = individual[worker]
-    pos = random.randrange(len(tasks))
-    tasks.insert(pos, task)
-    individual[worker] = tasks
+        # insert the task in worker's task list at a random position
+        tasks = individual[worker]
+        pos = random.randrange(len(tasks))
+        tasks.insert(pos, task)
+        individual[worker] = tasks
 
+        return individual
+    
     return individual
 
 
@@ -316,7 +331,7 @@ if __name__== '__main__':
     
     data = Data("Bordeaux", 1)
 
-    new_gene = mutate_reorder(gene_ini, data)
+    new_gene = mutate_add(gene_ini, data)
 
     print('-------------------------------------------------')
     print('MODIFY GENE')
