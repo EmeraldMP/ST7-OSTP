@@ -87,7 +87,7 @@ def mutate_reassign(individual, data):
     workers = list(individual)
 
     # pick a worker from which a task is taken
-    worker1 = pickWorker(individual)
+    worker1 = pickWorker(individual)[0]
 
     # adjust probs
     # a worker is more likely to be chosen if less tasks are allocated to them
@@ -121,16 +121,26 @@ def mutate_reassign(individual, data):
 
 def mutate_reorder(individual, data):
     # pick a worker
+<<<<<<< HEAD
     worker = pickWorker(individual)
     print(worker)
+=======
+    worker = pickWorker(individual)[0]
+
+>>>>>>> a4a5d5fccd2eac09330f9fc7cad3f4a86d291583
     tasks = individual[worker]
 
     # cannot reorder if there are less than 2 tasks
     if len(tasks) < 2:
         return individual
 
+
+    # cannot reorder if there are less than 2 tasks
+    if len(tasks) < 2:
+        return individual
+
     # pick two tasks
-    task1 = pickTask(tasks, worker, data)
+    task1 = pickTask(tasks, worker, data)[0]
     task2 = task1
     if len(tasks) > 1:
         while task2 == task1:
@@ -145,13 +155,18 @@ def mutate_reorder(individual, data):
 
 
 def mutate_remove(individual, data):
-    # pick a worker from which a task is removed
-    worker = pickWorker(individual)
+    num_tasks = 0
 
-    tasks = individual[worker]
+    # make sure that the chosen worker has at least one task
+    while num_tasks < 1:
+        # pick a worker from which a task is removed
+        worker = pickWorker(individual)[0]
+
+        tasks = individual[worker]
+        num_tasks = len(tasks)
 
     # remove a task based on probabilities
-    task = pickTask(tasks, worker, data)
+    task = pickTask(tasks, worker, data)[0]
     tasks.remove(task)
 
     individual[worker] = tasks
@@ -161,7 +176,7 @@ def mutate_remove(individual, data):
 
 def mutate_add(individual, data):
     # pick a worker such that it is more likely to pick one with less tasks
-    worker = pickWorker(individual, crit="less")
+    worker = pickWorker(individual, crit="less")[0]
 
     task = None
     undoneTasks = []
@@ -182,11 +197,11 @@ def mutate_add(individual, data):
         if len(undoneTasks) == 0:
             already_checked_workers.append(worker)
             while worker in already_checked_workers:
-                worker = pickWorker(individual, crit="less")
+                worker = pickWorker(individual, crit="less")[0]
             cnt += 1
         else:
             # pick a task from undone tasks
-            task = pickTask(undoneTasks, worker, data)
+            task = pickTask(undoneTasks, worker, data)[0]
 
     assert task is not None, "no task was picked!"
 
@@ -215,10 +230,10 @@ def pickWorker(individual, crit="more", num_worker=1):
     # use the number of tasks of a worker to calculate their probability to be picked
     if crit == "more":
         # a worker is more likely to be chosen if more tasks are allocated to them
-        probs = [len(individual[worker]) for worker in workers]
+        probs = [(0.001 + len(individual[worker])) for worker in workers]
     else:
         # a worker is more likely to be chosen if less tasks are allocated to them
-        probs = [1 / (1 + len(individual[worker])) for worker in workers]
+        probs = [1 / (0.001 + len(individual[worker])) for worker in workers]
 
     # make sure that not more workers than available are picked
     num_worker = min(num_worker, len(workers))
