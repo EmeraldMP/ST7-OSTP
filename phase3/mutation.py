@@ -295,3 +295,35 @@ def swapPositions(list, el1, el2):
     list[index1], list[index2] = list[index2], list[index1]
 
     return list
+
+
+if __name__== '__main__':
+
+    import sys
+    import os
+
+    # Get the path to the parent directory of the current directory
+
+    if str(os.getcwd())[-6:]== 'phase3':
+        raise NameError('Run the code from the previous file')
+    else:
+        parent_dir = os.path.abspath(os.getcwd())
+
+    sys.path.append(parent_dir)
+
+    # Import the Data class from the data module
+    from data import Data
+
+    gene_ini = {'Ambre': ['T8', 'T10', 'T7', 'T9', 'T2'],
+            'Valentin': ['T5', 'T3', 'T6', 'T4']}
+    
+    data = Data("Bordeaux", 1)
+    
+    new_gene = mutate(gene_ini, data)
+
+    print('--------------------------------------------------------')
+    print(new_gene)
+
+# Good gene 
+# {'Ambre': ['T8', 'T10', 'T7', 'T4', 'T2'],
+#  'Valentin': ['T5', 'T3', 'T6', 'T9']}
