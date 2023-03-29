@@ -1,6 +1,5 @@
-from ..data import lecture
 import numpy as np
-from check_constraints import feasibility
+from phase3.check_constraints import feasibility
 import random
 from copy import *
 
@@ -71,7 +70,8 @@ def create_population(data, initial_population_number):
     population = []
 
     for i in range(initial_population_number):
-        population.append(create_individual(data))
+        ind = create_individual(data)
+        population.append(ind)
 
     return population
 
@@ -96,24 +96,33 @@ def create_individual(data):
         lists containing the tasks that they make in a given solution)
     '''
 
-    individual = {}
+    individual = {w: [] for w in data.Workers}
     tasks = [t for t in data.Tasks]
 
     for w in data.Workers:
         individual[w] = []
 
-        while feasibility(individual):
+        while feasibility(individual, data):
+            p = True
 
             tri = sorted(data.t[data.Houses[w]].keys(),
                          key=lambda t: data.t[data.Houses[w]][t])
             i = 0
-            while tri[i] not in tasks and tri[i] not in data.TasksW[w]:
+            while tri[i] not in tasks or tri[i] not in data.TasksW[w]:
                 i += 1
+                if i == len(tri):
+                    break
+            else:
+                individual[w].append(tri[i])
+                tasks.remove(tri[i])
+                p = False
 
-            individual[w].append(tri[i])
-            tasks.remove(tri[i])
+            if p:
+                break
 
-        individual[w].remove(tri[i])
+        else:
+            individual[w].remove(tri[i])
+            tasks.append(tri[i])
 
     return individual
 
@@ -133,8 +142,8 @@ def individuals_copy(individuals, number_of_copies):
     number_of_copies: int
         Number of copies to be made for each individual.
     '''
-    copy_of_individuals = [copy.deepcopy(
-        individuals[i]) for i in range(number_of_copies) for m in range(number_of_copies)]
+    copy_of_individuals = [copy.deepcopy(individuals[i]) for i in range(
+        number_of_copies) for m in range(number_of_copies)]
 
     return copy_of_individuals
 

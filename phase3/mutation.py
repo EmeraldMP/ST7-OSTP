@@ -5,6 +5,7 @@ a dictionary consisting of several lists, one for each worker and containing the
 
 
 """
+from data import Data
 import random
 import numpy as np
 
@@ -61,8 +62,10 @@ def mutate_flip(individual_ini, data):
     # print(idx1, idx2)
 
     # Create distance Matrix
-    dist_mat1 = np.cumsum([t[data.Houses[w1]][task] if task in good_task_w2 else 0 for task in individual[w1]])
-    dist_mat2 = np.cumsum([t[data.Houses[w2]][task] if task in good_task_w1 else 0 for task in individual[w2]])
+    dist_mat1 = np.cumsum(
+        [t[data.Houses[w1]][task] if task in good_task_w2 else 0 for task in individual[w1]])
+    dist_mat2 = np.cumsum(
+        [t[data.Houses[w2]][task] if task in good_task_w1 else 0 for task in individual[w2]])
 
     if dist_mat1[-1] == 0 or dist_mat2[-1] == 0:
         # we make no changes
@@ -110,7 +113,8 @@ def mutate_reassign(individual, data):
         if task in data.TasksW[worker2]:
             #  reassign the task to worker 2 at a random place
             individual[worker1].remove(task)
-            individual[worker2].insert(random.randrange(len(individual[worker2]) + 1), task)
+            individual[worker2].insert(random.randrange(
+                len(individual[worker2]) + 1), task)
 
             check = False
 
@@ -127,7 +131,6 @@ def mutate_reorder(individual, data):
     # cannot reorder if there are less than 2 tasks
     if len(tasks) < 2:
         return individual
-
 
     # cannot reorder if there are less than 2 tasks
     if len(tasks) < 2:
@@ -194,7 +197,7 @@ def mutate_add(individual, data):
     #     else:
     #         # pick a task from undone tasks
     #         task = pickTask(undoneTasks, worker, data)
-    
+
     for worker in workers:
         undoneTasks = set(data.TasksW[worker])
 
@@ -219,7 +222,7 @@ def mutate_add(individual, data):
         individual[worker] = tasks
 
         return individual
-    
+
     return individual
 
 
@@ -273,13 +276,15 @@ def pickTask(tasks, worker, data, num_tasks=1):
             task = tasks[task_ID]
             post_task = tasks[task_ID + 1]
             # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
-            probs_task.append(data.t[data.Houses[worker]][task] + data.t[task][post_task])
+            probs_task.append(data.t[data.Houses[worker]]
+                              [task] + data.t[task][post_task])
         # last task of worker
         elif task_ID == len(tasks) - 1:
             task = tasks[task_ID]
             pre_task = tasks[task_ID - 1]
             # access time matrix data.t by data.t[][] with task or data.Houses[worker] as arguments
-            probs_task.append(data.t[pre_task][task] + data.t[task][data.Houses[worker]])
+            probs_task.append(data.t[pre_task][task] +
+                              data.t[task][data.Houses[worker]])
         else:
             task = tasks[task_ID]
             pre_task = tasks[task_ID - 1]
@@ -303,18 +308,18 @@ def swapPositions(liste, el1, el2):
     index2 = liste.index(el2)
 
     liste[index1], liste[index2] = liste[index2], liste[index1]
-    
+
     return liste
 
 
-if __name__== '__main__':
+if __name__ == '__main__':
 
     import sys
     import os
 
     # Get the path to the parent directory of the current directory
 
-    if str(os.getcwd())[-6:]== 'phase3':
+    if str(os.getcwd())[-6:] == 'phase3':
         raise NameError('Run the code from the previous file')
     else:
         parent_dir = os.path.abspath(os.getcwd())
@@ -325,10 +330,10 @@ if __name__== '__main__':
     from data import Data
 
     gene_ini = {'Ambre': ['T8', 'T10', 'T7', 'T4', 'T2'],
-            'Valentin': ['T5', 'T3', 'T6', 'T9']}
+                'Valentin': ['T5', 'T3', 'T6', 'T9']}
     print('INITIAL GENE')
     print(gene_ini)
-    
+
     data = Data("Bordeaux", 1)
 
     new_gene = mutate_add(gene_ini, data)
@@ -337,6 +342,6 @@ if __name__== '__main__':
     print('MODIFY GENE')
     print(new_gene)
 
-# Good gene 
+# Good gene
 # {'Ambre': ['T8', 'T10', 'T7', 'T4', 'T2'],
 #  'Valentin': ['T5', 'T3', 'T6', 'T9']}

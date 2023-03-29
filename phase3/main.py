@@ -1,9 +1,9 @@
-from misc import create_population, individuals_copy, select_best_group, find_best_solution, calculate_cost
-from mutation import mutate
-from ..data import Data
+from data import Data
+from phase3.misc import create_population, individuals_copy, select_best_group, find_best_solution, calculate_cost
+from phase3.mutation import mutate
 
 
-def main(endroit, instance):
+def process(endroit, instance):
     """
     This function implements the main algorithm to be used in phase 3. It
     orchestrates all the different functions, most importantly dealing with
@@ -58,10 +58,3 @@ def main(endroit, instance):
             optimum = True
 
     return best_solution
-
-
-if __name__ == '__main__':
-    endroit = "Ukraine"
-    instance = 3
-
-    main(endroit, instance)
