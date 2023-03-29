@@ -43,7 +43,7 @@ def mutate(individual, data):
             individualc = mutate_remove(individual, data)
         else:
             individualc = mutate_add(individual, data)
-        score = feasibility_sc(individualc)
+        score = feasibility_sc(individualc, data)
         if score:
             count = 10
 
