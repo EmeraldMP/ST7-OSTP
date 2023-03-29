@@ -8,6 +8,7 @@ a dictionary consisting of several lists, one for each worker and containing the
 from data import Data
 import random
 import numpy as np
+from phase3.check_constraints import feasibility, feasibility_sc
 
 
 def mutate(individual, data):
@@ -26,19 +27,27 @@ def mutate(individual, data):
     :return: mutated individual
     """
     strategies = ["flip", "reassign", "reorder", "remove", "add"]
-
-    # pick a strategy
     strategy = random.choice(strategies)
-    if strategy == "flip":
-        individual = mutate_flip(individual, data)
-    elif strategy == "reassign":
-        individual = mutate_reassign(individual, data)
-    elif strategy == "reorder":
-        individual = mutate_reorder(individual, data)
-    elif strategy == "remove":
-        individual = mutate_remove(individual, data)
-    else:
-        individual = mutate_add(individual, data)
+
+    count = 0
+    # pick a strategy
+    while count < 10:
+
+        if strategy == "flip":
+            individualc = mutate_flip(individual, data)
+        elif strategy == "reassign":
+            individualc = mutate_reassign(individual, data)
+        elif strategy == "reorder":
+            individualc = mutate_reorder(individual, data)
+        elif strategy == "remove":
+            individualc = mutate_remove(individual, data)
+        else:
+            individualc = mutate_add(individual, data)
+        score = feasibility_sc(individualc)
+        if score:
+            count = 10
+
+        count += 1
 
     return individual
 
@@ -55,9 +64,19 @@ def mutate_flip(individual_ini, data):
     good_task_w1 = data.TasksW[w1]
     good_task_w2 = data.TasksW[w2]
 
+    if not individual[w1] or not individual[w2]:
+        return individual
+
     # choose random task to flip
-    idx1 = random.randint(0, len(individual[w1]) - 1)
-    idx2 = random.randint(0, len(individual[w2]) - 1)
+    if len(individual[w1]) > 1:
+        idx1 = random.randint(0, len(individual[w1]) - 1)
+    else:
+        idx1 = 0
+
+    if len(individual[w2]) > 1:
+        idx2 = random.randint(0, len(individual[w2]) - 1)
+    else:
+        idx2 = 0
 
     # print(idx1, idx2)
 
@@ -143,7 +162,6 @@ def mutate_reorder(individual, data):
         task2 = pickTask(tasks, worker, data)
 
     # reorder tasks of worker by swapping task1 and task2
-    print(tasks)
     tasks = swapPositions(tasks, task1, task2)
     individual[worker] = tasks
 
@@ -163,7 +181,9 @@ def mutate_remove(individual, data):
 
     # remove a task based on probabilities
     task = pickTask(tasks, worker, data)
-    tasks.remove(task)
+
+    if task:
+        tasks.remove(task)
 
     individual[worker] = tasks
 
@@ -212,13 +232,18 @@ def mutate_add(individual, data):
                 continue
         else:
             task = pickTask(undoneTasks, worker, data)
+            if not task:
+                continue
 
         assert task is not None, "no task was picked!"
 
         # insert the task in worker's task list at a random position
         tasks = individual[worker]
-        pos = random.randrange(len(tasks))
-        tasks.insert(pos, task)
+        if len(tasks) == 0:
+            tasks.append(task)
+        else:
+            pos = random.randrange(len(tasks))
+            tasks.insert(pos, task)
         individual[worker] = tasks
 
         return individual
@@ -264,6 +289,11 @@ def pickTask(tasks, worker, data, num_tasks=1):
     :return: a task of the worker
     """
     # tasks = individual[worker]
+    if not tasks:
+        return None
+
+    if len(tasks) == 1:
+        return tasks[0]
 
     # make sure that not more tasks than available are picked
     num_tasks = min(num_tasks, len(tasks))

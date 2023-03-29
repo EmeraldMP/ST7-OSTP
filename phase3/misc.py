@@ -1,7 +1,7 @@
 import numpy as np
 from phase3.check_constraints import feasibility
 import random
-from copy import *
+import copy
 
 
 def vector_unitario(vector):
