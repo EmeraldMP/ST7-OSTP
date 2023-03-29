@@ -34,16 +34,17 @@ def mutate(individual, data):
     while count < 10:
 
         if strategy == "flip":
-            individualc = mutate_flip(individual, data)
+            individual = mutate_flip(individual, data)
         elif strategy == "reassign":
-            individualc = mutate_reassign(individual, data)
+            individual = mutate_reassign(individual, data)
         elif strategy == "reorder":
-            individualc = mutate_reorder(individual, data)
+            individual = mutate_reorder(individual, data)
         elif strategy == "remove":
-            individualc = mutate_remove(individual, data)
+            individual = mutate_remove(individual, data)
         else:
-            individualc = mutate_add(individual, data)
-        score = feasibility_sc(individualc, data)
+            individual = mutate_add(individual, data)
+
+        score = feasibility_sc(individual, data)
         if score:
             count = 10
 
@@ -114,7 +115,7 @@ def mutate_reassign(individual, data):
     # adjust probs
     # a worker is more likely to be chosen if less tasks are allocated to them
     workers.remove(worker1)
-    probs2 = [1 / (1 + len(individual[worker])) for worker in workers]
+    probs2 = [1 / (0.001 + len(individual[worker])) for worker in workers]
 
     # pick another worker who gets an additional task
     worker2 = random.choices(workers, weights=probs2, k=1)[0]
