@@ -1,3 +1,4 @@
+from more_itertools import sort_together
 import numpy as np
 from phase3.check_constraints import feasibility
 import random
@@ -148,7 +149,7 @@ def individuals_copy(individuals, number_of_copies):
     return copy_of_individuals
 
 
-def select_best_group(generation, n):
+def select_best_group(generation, n, score):
     '''
     This function picks the n best solutions from a generation.
     In other words, it calculates the cost value of every individual
@@ -170,13 +171,15 @@ def select_best_group(generation, n):
         values.
     '''
 
-    generation_cost = [calculate_cost(generation[i])
-                       for i in range(len(generation))]
-    sorted_indexes = sorted(range(len(generation_cost)),
-                            key=lambda i: generation_cost[i], reverse=True)[:n]
-    best_group = [generation[i] for i in sorted_indexes]
+    # generation_cost = [calculate_cost(generation[i])
+    #                    for i in range(len(generation))]
+    sorted_temp = sort_together(
+        [generation, score], key_list=[1], reverse=True)
 
-    return best_group
+    best_group = list(sorted_temp[0])[:n]
+    best_scores = list(sorted_temp[1])[:n]
+
+    return best_group, best_scores
 
 
 def find_best_solution(generation):

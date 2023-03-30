@@ -50,7 +50,7 @@ def mutate(individual, data):
 
         count += 1
 
-    return individual
+    return individual, score
 
 
 def mutate_flip(individual_ini, data):

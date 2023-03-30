@@ -4,7 +4,7 @@ def initial_time(fin, task, w, data):
     begin = max(fin, data.a[task])
     for u in data.Unva[task]:
         if data.C[u][0] <= begin <= data.C[u][1]:
-            begin = data.C[1]
+            begin = data.C[u][1]
 
     if begin <= data.b[task]:
         return begin
@@ -43,7 +43,7 @@ def feasibility(gene, data):
                     begin = 13*60
                     for u in data.Unva[task]:
                         if data.C[u][0] <= begin <= data.C[u][1]:
-                            begin = data.C[1]
+                            begin = data.C[u][1]
 
                     if begin > data.b[task]:
                         return False
@@ -82,7 +82,7 @@ def feasibility(gene, data):
                             begin = 13*60
                             for u in data.Unva[task]:
                                 if data.C[u][0] <= begin <= data.C[u][1]:
-                                    begin = data.C[1]
+                                    begin = data.C[u][1]
 
                             if begin > data.b[task]:
                                 return False
@@ -115,7 +115,7 @@ def feasibility(gene, data):
             return False
 
         for p in Indisp.keys():
-            #print(task, minutes_to_time(fin + data.t[task][p]), minutes_to_time((data.a[p])), Indisp[p])
+            # print(task, minutes_to_time(fin + data.t[task][p]), minutes_to_time((data.a[p])), Indisp[p])
             if Indisp[p]:
                 # print("on est bien dedans")
                 Indisp[p] = False
@@ -133,7 +133,7 @@ def feasibility(gene, data):
                 fin = begin
 
                 if fin > data.beta[w]:
-                    #print(task, "retour")
+                    # print(task, "retour")
                     return False
 
     return True
@@ -172,7 +172,7 @@ def feasibility_sc(gene, data):
                     begin = 13*60
                     for u in data.Unva[task]:
                         if data.C[u][0] <= begin <= data.C[u][1]:
-                            begin = data.C[1]
+                            begin = data.C[u][1]
 
                     if begin > data.b[task]:
                         return 0
@@ -185,7 +185,7 @@ def feasibility_sc(gene, data):
                 return 0
 
             for p in Indisp.keys():
-                #print(task, minutes_to_time(fin + data.t[task][p]), minutes_to_time((data.a[p])), Indisp[p])
+                # print(task, minutes_to_time(fin + data.t[task][p]), minutes_to_time((data.a[p])), Indisp[p])
                 if Indisp[p] and fin + data.t[task][p] > data.a[p]:
                     # print("on est bien dedans")
                     sc -= eps*data.t[lastTask][p]
@@ -212,7 +212,7 @@ def feasibility_sc(gene, data):
                             begin = 13*60
                             for u in data.Unva[task]:
                                 if data.C[u][0] <= begin <= data.C[u][1]:
-                                    begin = data.C[1]
+                                    begin = data.C[u][1]
 
                             if begin > data.b[task]:
                                 return 0
@@ -220,7 +220,7 @@ def feasibility_sc(gene, data):
                     fin = begin + data.d[task]
 
                     if fin > data.b[task]:
-                        print(task, "fin")
+                        # print(task, "fin")
                         return 0
 
             # print(task, minutes_to_time(begin), minutes_to_time(fin))
@@ -245,7 +245,7 @@ def feasibility_sc(gene, data):
             return 0
 
         for p in Indisp.keys():
-            #print(task, minutes_to_time(fin + data.t[task][p]), minutes_to_time((data.a[p])), Indisp[p])
+            # print(task, minutes_to_time(fin + data.t[task][p]), minutes_to_time((data.a[p])), Indisp[p])
             if Indisp[p]:
                 # print("on est bien dedans")
                 sc -= eps*data.t[lastTask][p]
@@ -264,7 +264,7 @@ def feasibility_sc(gene, data):
                 fin = begin
 
                 if fin > data.beta[w]:
-                    #print(task, "retour")
+                    # print(task, "retour")
                     return 0
         sc -= eps*data.t[lastTask][task]
     return sc
