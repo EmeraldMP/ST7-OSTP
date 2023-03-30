@@ -44,13 +44,13 @@ def mutate(individual, data):
         else:
             individual = mutate_add(individual, data)
 
-        score = feasibility_sc(individual, data)
-        if score:
+        score_task, score_travel = feasibility_sc(individual, data)
+        if score_task:
             count = 10
 
         count += 1
 
-    return individual, score
+    return individual, score_task, score_travel
 
 
 def mutate_flip(individual_ini, data):

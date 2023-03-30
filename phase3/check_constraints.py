@@ -90,7 +90,7 @@ def feasibility(gene, data):
                     fin = begin + data.d[task]
 
                     if fin > data.b[task]:
-                        print(task, "fin")
+                        # print(task, "fin")
                         return False
 
             # print(task, minutes_to_time(begin), minutes_to_time(fin))
@@ -140,7 +140,8 @@ def feasibility(gene, data):
 
 
 def feasibility_sc(gene, data):
-    sc = 0
+    sc_task = 0
+    sc_trav = 0
     eps = 0.001
 
     for w in data.Workers:
@@ -151,14 +152,14 @@ def feasibility_sc(gene, data):
         lastTask = data.Houses[w]
 
         for task in Tasks:
-            sc += data.d[task]
+            sc_task += data.d[task]
 
             fin += data.t[lastTask][task]
             begin = initial_time(fin, task, w, data)
 
             if not begin:
                 # print(task, "begin")
-                return 0
+                return 0, 0
 
             if begin + data.d[task] > 13*60 and Lunch:
                 Lunch = False
@@ -166,7 +167,7 @@ def feasibility_sc(gene, data):
                 begin = initial_time(fin, task, w, data)
                 if not begin:
                     # print(w)
-                    return 0
+                    return 0, 0
 
                 if begin < 13*60:
                     begin = 13*60
@@ -175,20 +176,20 @@ def feasibility_sc(gene, data):
                             begin = data.C[u][1]
 
                     if begin > data.b[task]:
-                        return 0
+                        return 0, 0
 
             fin = begin + data.d[task]
 
             if fin > data.b[task]:
                 # print(fin, data.b[task])
                 # print(task, "fin")
-                return 0
+                return 0, 0
 
             for p in Indisp.keys():
                 # print(task, minutes_to_time(fin + data.t[task][p]), minutes_to_time((data.a[p])), Indisp[p])
                 if Indisp[p] and fin + data.t[task][p] > data.a[p]:
                     # print("on est bien dedans")
-                    sc -= eps*data.t[lastTask][p]
+                    sc_trav += data.t[lastTask][p]
                     Indisp[p] = False
                     fin = data.b[p]
                     lastTask = p
@@ -198,7 +199,7 @@ def feasibility_sc(gene, data):
 
                     if not begin:
                         # print(task, "begin")
-                        return 0
+                        return 0, 0
 
                     if not begin + data.d[task] <= 13*60 and Lunch:
                         Lunch = False
@@ -206,7 +207,7 @@ def feasibility_sc(gene, data):
                         begin = initial_time(fin, task, w, data)
                         if not begin:
                             # print(w)
-                            return 0
+                            return 0, 0
 
                         if begin < 13*60:
                             begin = 13*60
@@ -215,16 +216,16 @@ def feasibility_sc(gene, data):
                                     begin = data.C[u][1]
 
                             if begin > data.b[task]:
-                                return 0
+                                return 0, 0
 
                     fin = begin + data.d[task]
 
                     if fin > data.b[task]:
                         # print(task, "fin")
-                        return 0
+                        return 0, 0
 
             # print(task, minutes_to_time(begin), minutes_to_time(fin))
-            sc -= eps*data.t[lastTask][task]
+            sc_trav += data.t[lastTask][task]
             lastTask = task
 
         # Spécifique ppour le retour à la maison
@@ -242,13 +243,13 @@ def feasibility_sc(gene, data):
 
         if fin > data.beta[w]:
             #print(task, "retour 1")
-            return 0
+            return 0, 0
 
         for p in Indisp.keys():
             # print(task, minutes_to_time(fin + data.t[task][p]), minutes_to_time((data.a[p])), Indisp[p])
             if Indisp[p]:
                 # print("on est bien dedans")
-                sc -= eps*data.t[lastTask][p]
+                sc_trav += data.t[lastTask][p]
                 Indisp[p] = False
                 fin = data.b[p]
                 lastTask = p
@@ -265,6 +266,8 @@ def feasibility_sc(gene, data):
 
                 if fin > data.beta[w]:
                     # print(task, "retour")
-                    return 0
-        sc -= eps*data.t[lastTask][task]
-    return sc
+                    return 0, 0
+
+        sc_trav += data.t[lastTask][task]
+
+    return sc_task, -sc_trav

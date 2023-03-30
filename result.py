@@ -287,8 +287,12 @@ class Result:
                 if begin + self.Data.d[task] > 13*60 and Lunch:
                     Lunch = False
                     fin += 60
-                    rep.append(
-                        [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
+                    if lastTask == self.Data.Houses[w]:
+                        rep.append(
+                            [w, int(max(720, self.Data.alpha[w]))])
+                    else:
+                        rep.append(
+                            [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
                     begin = initial_time(fin, task, w, self.Data)
 
                 fin = begin + self.Data.d[task]
@@ -308,8 +312,12 @@ class Result:
                         if not begin + self.Data.d[task] <= 13*60 and Lunch:
                             Lunch = False
                             fin += 60
-                            rep.append(
-                                [w, int(max(720, T[lastTask] + self.Data.d[lastTask]))])
+                            if lastTask == self.Data.Houses[w]:
+                                rep.append(
+                                    [w, int(max(720, self.Data.alpha[w]))])
+                            else:
+                                rep.append(
+                                    [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
                             begin = initial_time(fin, task, w, self.Data)
 
                         fin = begin + self.Data.d[task]
@@ -328,15 +336,19 @@ class Result:
             if not begin <= 13*60 and Lunch:
                 Lunch = False
                 fin += 60
-                rep.append(
-                    [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
+                if lastTask == self.Data.Houses[w]:
+                    rep.append(
+                        [w, int(max(720, self.Data.alpha[w]))])
+                else:
+                    rep.append(
+                        [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
                 begin = max(fin, self.Data.beta[w])
 
                 if begin < 13*60:
                     begin = 13*60
                     for u in self.Data.Unva[task]:
                         if self.Data.C[u][0] <= begin <= self.Data.C[u][1]:
-                            begin = self.Data.C[1]
+                            begin = self.Data.C[u][1]
 
                     if begin > self.Data.b[task]:
                         return False
@@ -358,15 +370,19 @@ class Result:
                     if not begin <= 13*60 and Lunch:
                         Lunch = False
                         fin += 60
-                        rep.append(
-                            [w, int(max(720, T[lastTask] + self.Data.d[lastTask]))])
+                        if lastTask == self.Data.Houses[w]:
+                            rep.append(
+                                [w, int(max(720, self.Data.alpha[w]))])
+                        else:
+                            rep.append(
+                                [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
                         begin = max(fin, self.Data.beta[w])
 
                         if begin < 13*60:
                             begin = 13*60
                             for u in self.Data.Unva[task]:
                                 if self.Data.C[u][0] <= begin <= self.Data.C[u][1]:
-                                    begin = self.Data.C[1]
+                                    begin = self.Data.C[u][1]
 
                             if begin > self.Data.b[task]:
                                 return False

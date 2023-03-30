@@ -5,7 +5,7 @@ import time
 from gurobipy import *
 from phase3.main import process
 
-
+# Paramètres de la simulation
 endroit = "Ukraine"
 instance = 3
 méthode = 3
@@ -13,7 +13,7 @@ version = 1
 opt = True
 ajout = ""
 
-
+# Processus
 Data = data.Data(endroit, instance)
 Var = modele.Variable(Data, méthode, version)
 

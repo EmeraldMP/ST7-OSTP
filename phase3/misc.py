@@ -73,6 +73,8 @@ def create_population(data, initial_population_number):
     for i in range(initial_population_number):
         ind = create_individual(data)
         population.append(ind)
+        ind = create_individual_rd(data)
+        population.append(ind)
 
     return population
 
@@ -99,8 +101,10 @@ def create_individual(data):
 
     individual = {w: [] for w in data.Workers}
     tasks = [t for t in data.Tasks]
+    work = copy.deepcopy(data.Workers)
+    random.shuffle(work)
 
-    for w in data.Workers:
+    for w in work:
         individual[w] = []
 
         while feasibility(individual, data):
@@ -109,6 +113,62 @@ def create_individual(data):
             tri = sorted(data.t[data.Houses[w]].keys(),
                          key=lambda t: data.t[data.Houses[w]][t])
             i = 0
+            while tri[i] not in tasks or tri[i] not in data.TasksW[w]:
+                i += 1
+                if i == len(tri):
+                    break
+            else:
+                individual[w].append(tri[i])
+                tasks.remove(tri[i])
+                p = False
+
+            if p:
+                break
+
+        else:
+            individual[w].remove(tri[i])
+            tasks.append(tri[i])
+
+    return individual
+
+
+def create_individual_rd(data):
+    '''
+    There will enter the "glouton" function the teacher was talking about
+    I guess, we have to search for a good way to create initial solutions.
+
+    Parameters
+    ----------
+    tasks: list
+        A list that contains all the tasks of the problem to be solved.
+    workers: list
+        A list that contains all the workers of the problem to be solved.
+
+    Returns
+    -------
+    individual: dict
+        Returns a dictionary representing an individual in the point of
+        view of the algorithm (workers are keys, and its values are the
+        lists containing the tasks that they make in a given solution)
+    '''
+
+    individual = {w: [] for w in data.Workers}
+    tasks = [t for t in data.Tasks]
+    work = copy.deepcopy(data.Workers)
+    random.shuffle(work)
+
+    for w in work:
+        individual[w] = []
+
+        while feasibility(individual, data):
+            p = True
+
+            tri = sorted(data.t[data.Houses[w]].keys(),
+                         key=lambda t: data.t[data.Houses[w]][t])
+
+            i = random.choices(range(len(tri)), weights=[
+                               1/(1 + data.t[data.Houses[w]][t]) for t in data.t[data.Houses[w]].keys()])[0]
+
             while tri[i] not in tasks or tri[i] not in data.TasksW[w]:
                 i += 1
                 if i == len(tri):
@@ -149,7 +209,7 @@ def individuals_copy(individuals, number_of_copies):
     return copy_of_individuals
 
 
-def select_best_group(generation, n, score):
+def select_best_group(generation, n, score_task, score_travel):
     '''
     This function picks the n best solutions from a generation.
     In other words, it calculates the cost value of every individual
@@ -174,12 +234,13 @@ def select_best_group(generation, n, score):
     # generation_cost = [calculate_cost(generation[i])
     #                    for i in range(len(generation))]
     sorted_temp = sort_together(
-        [generation, score], key_list=[1], reverse=True)
+        [generation, score_task, score_travel], key_list=[1, 2], reverse=True)
 
     best_group = list(sorted_temp[0])[:n]
-    best_scores = list(sorted_temp[1])[:n]
+    best_scores_task = list(sorted_temp[1])[:n]
+    best_scores_travel = list(sorted_temp[2])[:n]
 
-    return best_group, best_scores
+    return best_group, best_scores_task, best_scores_travel
 
 
 def find_best_solution(generation):
