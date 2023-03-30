@@ -10,7 +10,7 @@ endroit = "Ukraine"
 instance = 3
 méthode = 3
 version = 1
-opt = True
+opt = False
 ajout = ""
 
 # Processus
@@ -19,9 +19,13 @@ Var = modele.Variable(Data, méthode, version)
 
 if opt:
     if méthode == 3:
-        individu = process(endroit, instance, Data)
+        tdeb = time.time()
+        individu, Best, Av, nb_it = process(Data)
+        tproc = time.time() - tdeb
         Result = result.Result(Data, Var, endroit, instance, méthode, version)
-        Result.convert_from_gene(individu)
+        Result.convert_from_individual(individu, tproc, nb_it)
+        Result.save_descent(Best, Av)
+        Result.save_res()
 
     else:
         Var.opti()
@@ -36,5 +40,6 @@ Result.save_txt(ajout=ajout)
 Result.save_map(ajout=ajout)
 Result.resultat_simple()
 Result.resultat_timeline(ajout=ajout, show=False)
+
 
 print(Var.Indicateur)

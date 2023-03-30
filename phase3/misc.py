@@ -240,6 +240,13 @@ def select_best_group(generation, n, score_task, score_travel):
     best_scores_task = list(sorted_temp[1])[:n]
     best_scores_travel = list(sorted_temp[2])[:n]
 
+    if len(sorted_temp) > 2*n:
+        idx = random.choices(range(n, len(sorted_temp)), n)
+        for i in idx:
+            best_group.append(sorted_temp[0][i])
+            best_scores_task.append(sorted_temp[1][i])
+            best_scores_travel.append(sorted_temp[2][i])
+
     return best_group, best_scores_task, best_scores_travel
 
 

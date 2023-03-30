@@ -1,5 +1,5 @@
 from data import minutes_to_time
-from metaheuristic import initial_time
+from phase3.check_constraints import initial_time, feasibility_sc
 import pickle
 import folium
 from gurobipy import *
@@ -141,8 +141,8 @@ class Result:
         m = folium.Map(
             location=self.Data.nodes[self.Data.Houses[self.Data.Workers[0]]], zoom_start=10)
 
-        colors = ['blue', 'red', 'green', 'orange', 'pink', 'cadetblue', 'black', 'darkblue', 'darkgreen', 'darkpurple',
-                  'darkred', 'gray', 'lightblue', 'lightgray', 'lightgreen', 'lightred', 'purple', 'white']
+        colors = ['blue', 'red', 'green', 'orange', 'pink', 'cadetblue', 'black', 'darkblue', 'darkgreen',
+                  'darkred', 'gray', 'lightblue', 'lightgreen', 'purple']*((len(self.Data.Workers)//14) + 1)
 
         for j in range(len(self.Data.Workers)):
             color = colors[j]
@@ -254,12 +254,12 @@ class Result:
         except:
             pass
 
-    def convert_to_gene(self):
+    def convert_to_individual(self):
         gene = {w: [i[0] for i in self.all_rutes[w] if i[0]
                     not in self.Data.Pauses[w]] for w in self.Data.Workers}
         return gene
 
-    def convert_from_gene(self, gene):
+    def convert_from_individual(self, gene, tproc, nb_it):
 
         X = {(i, j, w): [0, f"{w}_fait_le_trajet_{i}_à_{j}"] for w in self.Data.Workers for j in self.Data.TasksW[w] + self.Data.Pauses[w] for i in self.Data.TasksW[w] + self.Data.Pauses[w] if j != i} |\
             {(i, self.Data.Houses[w], w): [0, f"{w}_fait_le_trajet_{i}_à_{self.Data.Houses[w]}"] for w in self.Data.Workers for i in self.Data.TasksW[w] + self.Data.Pauses[w]} |\
@@ -317,7 +317,8 @@ class Result:
                                     [w, int(max(720, self.Data.alpha[w]))])
                             else:
                                 rep.append(
-                                    [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
+                                    [w, int(max(720, T[lastTask] + self.Data.d[lastTask]))])
+
                             begin = initial_time(fin, task, w, self.Data)
 
                         fin = begin + self.Data.d[task]
@@ -337,8 +338,7 @@ class Result:
                 Lunch = False
                 fin += 60
                 if lastTask == self.Data.Houses[w]:
-                    rep.append(
-                        [w, int(max(720, self.Data.alpha[w]))])
+                    rep.append([w, int(max(720, self.Data.alpha[w]))])
                 else:
                     rep.append(
                         [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
@@ -371,11 +371,10 @@ class Result:
                         Lunch = False
                         fin += 60
                         if lastTask == self.Data.Houses[w]:
-                            rep.append(
-                                [w, int(max(720, self.Data.alpha[w]))])
+                            rep.append([w, int(max(720, self.Data.alpha[w]))])
                         else:
                             rep.append(
-                                [w, int(max(720, T[lastTask][0] + self.Data.d[lastTask]))])
+                                [w, int(max(720, T[lastTask] + self.Data.d[lastTask]))])
                         begin = max(fin, self.Data.beta[w])
 
                         if begin < 13*60:
@@ -399,4 +398,24 @@ class Result:
             {i: sum([self.Var.X[(i, j, w)][0] for w in self.Data.Workers for j in self.Data.Tasks +
                      self.Data.Pauses[w] + [self.Data.Houses[w]] if (i, j, w) in self.Var.X]) for i in self.Var.T.keys() if type(self.Var.T[i]) == int}
 
-        self.Var.Indicateur = {"moments repas": rep}
+        dw, dt = feasibility_sc(gene, self.Data)
+
+        self.Var.Indicateur = {"temps execution": tproc, "tdurée tâches": dw,
+                               "tdurée trajet": -dt, "iterations": nb_it,  "moments repas": rep}
+
+    def save_descent(self, Best, Av, ajout="", show=False):
+        # Represent the solution in a time graph, to easily see the period of work, travel and the respect of availabilities
+        ax = plt.subplot()
+        ax.set_title("Amelioration of the solution on the iterations")
+
+        ax.scatter(range(len(Best)), Best, color='red',
+                   label="Score of the best solution")
+        ax.scatter(range(len(Av)), Av, color='blue',
+                   label="Average score over the generation")
+
+        ax.legend()
+
+        plt.savefig(
+            f"solutions\Courbe{self.endroit}V{self.instance}ByM{self.méthode}{self.version}{ajout}.png")
+        if show:
+            plt.show()

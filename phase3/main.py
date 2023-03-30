@@ -2,9 +2,10 @@ from data import Data
 from phase3.misc import create_population, individuals_copy, select_best_group, find_best_solution, calculate_cost
 from phase3.mutation import mutate
 from phase3.check_constraints import feasibility_sc
+import time
 
 
-def process(endroit, instance, data):
+def process(data):
     """
     This function implements the main algorithm to be used in phase 3. It
     orchestrates all the different functions, most importantly dealing with
@@ -21,6 +22,8 @@ def process(endroit, instance, data):
 
     Parameters
     ----------
+    data: Data (local class)
+        All the data from the excel defined in different parts
 
     Returns
     -------
@@ -30,6 +33,7 @@ def process(endroit, instance, data):
 
     """
     try:
+        tdeb = time.time()
         initial_population_number = 10
         best_future_generation_number = 10
         number_of_copies = 10
@@ -40,6 +44,10 @@ def process(endroit, instance, data):
 
         best_scores_task = []
         best_scores_travel = []
+
+        Best = []
+        Av = []
+
         for ind in individuals:
             d, t = feasibility_sc(ind, data)
             best_scores_task.append(d)
@@ -82,10 +90,18 @@ def process(endroit, instance, data):
             bt = -best_scores_travel[0]
             print(
                 f"Best score: tasks duration - {best_scores_task[0]} ; travel duration - {bt}", end="\r")
-            if best_scores_task[0] >= stop_cost:
+
+            Best.append(best_scores_task[0] - 0.01*bt)
+            Av.append((sum(best_scores_task) - 0.01 *
+                      sum(best_scores_task))/len(best_scores_task))
+
+            # if abs(sum(Av[-10:]) - sum(Av[-11: -1])) < 0.001:
+            #     optimum = True
+
+            if (time.time() - tdeb) > 300:
                 optimum = True
 
     except KeyboardInterrupt:
-        return best_solution
+        return best_solution, Best, Av, len(Best)
 
-    return best_solution
+    return best_solution, Best, Av, len(Best)
