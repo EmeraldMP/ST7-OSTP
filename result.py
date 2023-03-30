@@ -408,10 +408,10 @@ class Result:
         ax = plt.subplot()
         ax.set_title("Amelioration of the solution on the iterations")
 
-        ax.scatter(range(len(Best)), Best, color='red',
-                   label="Score of the best solution")
-        ax.scatter(range(len(Av)), Av, color='blue',
-                   label="Average score over the generation")
+        ax.plot(range(len(Best)), Best, color='red',
+                label="Score of the best solution")
+        ax.plot(range(len(Av)), Av, color='blue',
+                label="Average score over the generation")
 
         ax.legend()
 
