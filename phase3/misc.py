@@ -204,7 +204,7 @@ def individuals_copy(individuals, number_of_copies):
         Number of copies to be made for each individual.
     '''
     copy_of_individuals = [copy.deepcopy(individuals[i]) for i in range(
-        number_of_copies) for m in range(number_of_copies)]
+        len(individuals)) for m in range(number_of_copies)]
 
     return copy_of_individuals
 

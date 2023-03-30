@@ -1,19 +1,19 @@
 taskId;performed,employeeName,startTime;
-T1;1;Sam;831;
-T2;1;Sam;907;
+T1;0;;;
+T2;0;;;
 T3;1;David;535;
-T4;1;John;841;
-T5;0;;;
+T4;1;John;960;
+T5;1;Sam;955;
 T6;0;;;
 T7;0;;;
-T8;1;John;670;
-T9;1;John;592;
+T8;0;;;
+T9;0;;;
 T10;1;David;705;
 T11;0;;;
 T12;0;;;
 T13;0;;;
-T14;0;;;
-T15;0;;;
+T14;1;John;645;
+T15;1;John;559;
 T16;0;;;
 
 employeeName,lunchBreakStartTime;

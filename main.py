@@ -6,11 +6,11 @@ from gurobipy import *
 from phase3.main import process
 
 # Paramètres de la simulation
-endroit = "Ukraine"
-instance = 3
+endroit = "Spain"
+instance = 2
 méthode = 3
 version = 1
-opt = False
+opt = True
 ajout = ""
 
 # Processus

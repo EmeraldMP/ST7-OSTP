@@ -34,9 +34,9 @@ def process(data):
     """
     try:
         tdeb = time.time()
-        initial_population_number = 10
-        best_future_generation_number = 10
-        number_of_copies = 10
+        initial_population_number = 50
+        best_future_generation_number = 20
+        number_of_copies = 15
         stop_cost = 5000
         best_solution = None
 
